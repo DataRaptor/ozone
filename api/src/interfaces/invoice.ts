@@ -5,6 +5,7 @@ export interface ICreateInvoicePayload {
   dueAt: number
   clientId: string
   tokenId: string
+  paymentAddressId: string
   items: ICreateInvoiceItemPayload[]
 }
 

@@ -36,6 +36,7 @@ export class InvoiceService {
         amount: totalAmount,
         dueAt: new Date(data.dueAt),
         note: data.note,
+        paymentAddress: { connect: { id: data.paymentAddressId } },
         company: { connect: { ownerId: user.id } },
         token: { connect: { id: data.tokenId } },
         client: { connect: { id: data.clientId } },
@@ -57,7 +58,7 @@ export class InvoiceService {
   public async getInvoice(payload: IGetInvoicePayload, user: IUser) {
     const invoice = await prisma.invoice.findUnique({
       where: { id: payload.id },
-      include: { items: true, client: true, token: true, company: true },
+      include: { items: true, client: true, token: true, company: true, paymentAddress: true },
     })
     if (!invoice) {
       throw new Error("Invoice does not exist")

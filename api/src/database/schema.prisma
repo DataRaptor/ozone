@@ -63,21 +63,25 @@ model Client {
 }
 
 model Invoice {
-  id        String        @id @default(cuid()) @db.VarChar()
-  title     String        @db.VarChar()
-  note      String?       @db.VarChar()
-  status    InvoiceStatus @default(UNPAID)
-  amount    Decimal       @db.Decimal(18, 9)
-  companyId String        @map("company_id") @db.VarChar()
-  company   Company       @relation(fields: [companyId], references: [id])
-  clientId  String        @map("client_id") @db.VarChar()
-  client    Client        @relation(fields: [clientId], references: [id])
-  tokenId   String        @map("token_id") @db.VarChar()
-  token     Token         @relation(fields: [tokenId], references: [id])
-  dueAt     DateTime      @map("due_at") @db.Timestamptz()
-  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
-  items     InvoiceItem[]
+  id               String        @id @default(cuid()) @db.VarChar()
+  number           Int           @db.Integer()
+  title            String        @db.VarChar()
+  note             String?       @db.VarChar()
+  status           InvoiceStatus @default(UNPAID)
+  amount           Decimal       @db.Decimal(18, 9)
+  paymentAddressId String        @map("payment_ddress_id") @db.VarChar()
+  paymentAddress   Address       @relation(fields: [paymentAddressId], references: [id])
+  companyId        String        @map("company_id") @db.VarChar()
+  company          Company       @relation(fields: [companyId], references: [id])
+  clientId         String        @map("client_id") @db.VarChar()
+  client           Client        @relation(fields: [clientId], references: [id])
+  tokenId          String        @map("token_id") @db.VarChar()
+  token            Token         @relation(fields: [tokenId], references: [id])
+  paidAt           DateTime?     @map("paid_at") @db.Timestamptz()
+  dueAt            DateTime      @map("due_at") @db.Timestamptz()
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  items            InvoiceItem[]
 
   @@map("invoices")
 }
@@ -100,13 +104,14 @@ model InvoiceItem {
 }
 
 model Address {
-  id        String   @id @default(cuid()) @db.VarChar()
-  address   String   @db.VarChar()
-  label     String   @db.VarChar()
-  companyId String   @map("company_id") @db.VarChar()
-  company   Company  @relation(fields: [companyId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  id        String    @id @default(cuid()) @db.VarChar()
+  address   String    @db.VarChar()
+  label     String    @db.VarChar()
+  companyId String    @map("company_id") @db.VarChar()
+  company   Company   @relation(fields: [companyId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  Invoice   Invoice[]
 
   @@map("addresses")
 }
@@ -114,6 +119,7 @@ model Address {
 model Token {
   id        String    @id @default(cuid()) @db.VarChar()
   address   String?   @unique @db.VarChar()
+  symbol    String    @db.VarChar()
   decimals  Int       @db.Integer()
   logo      String    @db.VarChar()
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()

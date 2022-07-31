@@ -17,6 +17,7 @@ export class InvoiceController {
         clientId: body.clientId,
         tokenId: body.tokenId,
         dueAt: body.dueAt,
+        paymentAddressId: body.paymentAddressId,
         items: body.items,
       }
 
