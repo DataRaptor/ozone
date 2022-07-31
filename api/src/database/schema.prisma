@@ -1,0 +1,132 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid()) @db.VarChar()
+  email     String?  @unique @db.VarChar()
+  password  String?  @db.VarChar()
+  name      String?  @db.VarChar()
+  address   String?  @unique @db.VarChar()
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  company   Company?
+
+  @@map("users")
+}
+
+model Company {
+  id            String        @id @default(cuid()) @db.VarChar()
+  name          String        @db.VarChar()
+  line1         String?       @db.VarChar()
+  city          String?       @db.VarChar()
+  state         String?       @db.VarChar()
+  postalCode    String?       @map("postal_code") @db.VarChar()
+  country       String?       @db.VarChar()
+  taxNumber     String?       @map("tax_number") @db.VarChar()
+  ownerId       String        @unique @db.VarChar()
+  owner         User          @relation(fields: [ownerId], references: [id])
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  clients       Client[]
+  invoices      Invoice[]
+  addresses     Address[]
+  invoice_items InvoiceItem[]
+
+  @@map("companies")
+}
+
+model Client {
+  id          String    @id @default(cuid()) @db.VarChar()
+  email       String    @unique @db.VarChar()
+  companyName String?   @map("company_name") @db.VarChar()
+  firstName   String?   @map("first_name") @db.VarChar()
+  lastName    String?   @map("last_name") @db.VarChar()
+  taxNumber   String?   @map("tax_number") @db.VarChar()
+  line1       String?   @db.VarChar()
+  city        String?   @db.VarChar()
+  state       String?   @db.VarChar()
+  postalCode  String?   @map("postal_code") @db.VarChar()
+  country     String?   @db.VarChar()
+  companyId   String    @map("company_id") @db.VarChar()
+  company     Company   @relation(fields: [companyId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  invoices    Invoice[]
+
+  @@map("clients")
+}
+
+model Invoice {
+  id        String        @id @default(cuid()) @db.VarChar()
+  title     String        @db.VarChar()
+  note      String?       @db.VarChar()
+  status    InvoiceStatus @default(UNPAID)
+  amount    Decimal       @db.Decimal(18, 9)
+  companyId String        @map("company_id") @db.VarChar()
+  company   Company       @relation(fields: [companyId], references: [id])
+  clientId  String        @map("client_id") @db.VarChar()
+  client    Client        @relation(fields: [clientId], references: [id])
+  tokenId   String        @map("token_id") @db.VarChar()
+  token     Token         @relation(fields: [tokenId], references: [id])
+  dueAt     DateTime      @map("due_at") @db.Timestamptz()
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  items     InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid()) @db.VarChar()
+  description String   @db.VarChar()
+  quantity    Int      @db.Integer()
+  price       Decimal  @db.Decimal(18, 9)
+  discount    Int?     @db.Integer()
+  tax         Int?     @db.Integer()
+  invoiceId   String   @map("invoice_id") @db.VarChar()
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  companyId   String   @map("company_id") @db.VarChar()
+  company     Company  @relation(fields: [companyId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("invoice_items")
+}
+
+model Address {
+  id        String   @id @default(cuid()) @db.VarChar()
+  address   String   @db.VarChar()
+  label     String   @db.VarChar()
+  companyId String   @map("company_id") @db.VarChar()
+  company   Company  @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("addresses")
+}
+
+model Token {
+  id        String    @id @default(cuid()) @db.VarChar()
+  address   String?   @unique @db.VarChar()
+  decimals  Int       @db.Integer()
+  logo      String    @db.VarChar()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  Invoice   Invoice[]
+
+  @@map("tokens")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  APPROVED
+  REJECTED
+  PAID
+}
