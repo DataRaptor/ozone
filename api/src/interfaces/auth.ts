@@ -4,6 +4,8 @@ interface IBaseAuthPayload {
   email?: string
   password?: string
   address?: string
+  signature?: string
+  messageId?: string
   mode: string
 }
 

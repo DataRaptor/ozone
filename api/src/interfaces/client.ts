@@ -1,9 +1,7 @@
 export interface IAddClientPayload {
-  email: string
-  name?: string
-  companyName?: string
-  firstName?: string
-  lastName?: string
+  name: string
+  email?: string
+  phone?: string
   taxNumber?: string
   line1?: string
   city?: string

@@ -1,42 +1,41 @@
-import argon2 from "argon2"
-import Joi from "joi"
 import { Service } from "typedi"
 import { prisma } from "../database/prisma"
+import { ApiError } from "../errors"
 import { IGetClientPayload, IAddClientPayload, IUpdateClientPayload, IUser, IDeleteClientPayload } from "../interfaces"
+import { clientSchema } from "../schema"
+import { utils } from "../utils"
 
 @Service()
 export class ClientService {
   public async addClient(payload: IAddClientPayload, user: IUser) {
-    const schema = Joi.object({
-      email: Joi.string().email().required().trim(),
-      name: Joi.string().optional().trim(),
-      companyName: Joi.string().optional().trim(),
-      firstName: Joi.string().optional().trim(),
-      lastName: Joi.string().optional().trim(),
-      taxNumber: Joi.string().optional().trim(),
-      line1: Joi.string().optional().trim(),
-      city: Joi.string().optional().trim(),
-      state: Joi.string().optional().trim(),
-      postalCode: Joi.string().optional(),
-      country: Joi.string().optional().trim(),
-    })
+    const cleanPayload: IAddClientPayload = utils.clean(payload)
+    const data: IAddClientPayload = await clientSchema.validateAsync(cleanPayload)
+    if (data.email) {
+      const client = await prisma.client.findFirst({
+        where: { email: data.email, company: { ownerId: { equals: user.id } } },
+      })
 
-    const data: IAddClientPayload = await schema.validateAsync(payload)
-    const client = await prisma.client.findUnique({ where: { email: data.email } })
-
-    if (client) {
-      throw new Error("Client already exists")
+      if (client) {
+        throw new ApiError("Client email address already exists", 409)
+      }
     }
 
-    const newClient = await prisma.client.create({
+    if (data.phone) {
+      const client = await prisma.client.findFirst({
+        where: { phone: data.phone, company: { ownerId: { equals: user.id } } },
+      })
+
+      if (client) {
+        throw new ApiError("Client phone number already exists", 409)
+      }
+    }
+
+    const client = await prisma.client.create({
       data: {
-        company: {
-          connect: { ownerId: user.id },
-        },
+        company: { connect: { ownerId: user.id } },
         email: data.email,
-        companyName: data.companyName,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        name: data.name,
+        phone: data.phone,
         taxNumber: data.taxNumber,
         line1: data.line1,
         city: data.city,
@@ -46,7 +45,7 @@ export class ClientService {
       },
     })
 
-    return newClient
+    return client
   }
 
   public async getClients(user: IUser) {
@@ -58,66 +57,73 @@ export class ClientService {
   }
 
   public async getClient(payload: IGetClientPayload, user: IUser) {
-    const client = await prisma.client.findUnique({
-      where: { id: payload.id },
-      include: { company: true },
-    })
+    const cleanPayload: IGetClientPayload = utils.clean(payload)
+    const client = await prisma.client.findUnique({ where: { id: cleanPayload.id }, include: { company: true } })
 
     if (!client) {
-      throw new Error("Client does not exist")
+      throw new ApiError("Client does not exist", 404)
     }
     if (client.company.ownerId !== user.id) {
-      throw new Error("You do not have permission to view this resoure")
+      throw new ApiError("You do not have permission to view this resoure", 403)
     }
 
     return client
   }
 
   public async updateClient(payload: IUpdateClientPayload, user: IUser) {
+    const cleanPayload: IUpdateClientPayload = utils.clean(payload)
     const client = await prisma.client.findUnique({
-      where: { id: payload.id },
+      where: { id: cleanPayload.id },
       include: { company: true },
     })
 
     if (!client) {
-      throw new Error("Client does not exist")
+      throw new ApiError("Client does not exist", 404)
     }
+
     if (client.company.ownerId !== user.id) {
-      throw new Error("You do not have permission to perform this action")
+      throw new ApiError("You do not have permission to perform this action", 403)
     }
 
-    const schema = Joi.object({
-      email: Joi.string().email().required().trim(),
-      name: Joi.string().optional().trim(),
-      companyName: Joi.string().optional().trim(),
-      firstName: Joi.string().optional().trim(),
-      lastName: Joi.string().optional().trim(),
-      taxNumber: Joi.string().optional().trim(),
-      line1: Joi.string().optional().trim(),
-      city: Joi.string().optional().trim(),
-      state: Joi.string().optional().trim(),
-      postalCode: Joi.string().optional(),
-      country: Joi.string().optional().trim(),
-    })
+    const data: IUpdateClientPayload["client"] = await clientSchema.validateAsync(cleanPayload.client)
 
-    const data: IUpdateClientPayload["client"] = await schema.validateAsync(payload.client)
+    if (data.email && data.email !== client.email) {
+      const client = await prisma.client.findFirst({
+        where: { email: data.email, company: { ownerId: { equals: user.id } } },
+      })
 
-    await prisma.client.update({ where: { id: payload.id }, data })
+      if (client) {
+        throw new ApiError("Client email address already exists", 409)
+      }
+    }
+
+    if (data.phone && data.phone !== client.phone) {
+      const client = await prisma.client.findFirst({
+        where: { phone: data.phone, company: { ownerId: { equals: user.id } } },
+      })
+
+      if (client) {
+        throw new ApiError("Client phone number already exists", 409)
+      }
+    }
+
+    return await prisma.client.update({ where: { id: cleanPayload.id }, data: { ...cleanPayload.client, ...data } })
   }
 
   public async deleteClient(payload: IDeleteClientPayload, user: IUser) {
+    const cleanPayload: IDeleteClientPayload = utils.clean(payload)
     const client = await prisma.client.findUnique({
-      where: { id: payload.id },
+      where: { id: cleanPayload.id },
       include: { company: true },
     })
 
     if (!client) {
-      throw new Error("Client does not exist")
+      throw new ApiError("Client does not exist", 404)
     }
     if (client.company.ownerId !== user.id) {
-      throw new Error("You do not have permission to perform this action")
+      throw new ApiError("You do not have permission to perform this action", 403)
     }
 
-    await prisma.client.delete({ where: { id: payload.id } })
+    await prisma.client.delete({ where: { id: cleanPayload.id } })
   }
 }

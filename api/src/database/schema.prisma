@@ -10,9 +10,10 @@ generator client {
 model User {
   id        String   @id @default(cuid()) @db.VarChar()
   email     String?  @unique @db.VarChar()
+  address   String?  @unique @db.VarChar()
   password  String?  @db.VarChar()
   name      String?  @db.VarChar()
-  address   String?  @unique @db.VarChar()
+  avatar    String?  @db.VarChar()
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
   company   Company?
@@ -22,13 +23,15 @@ model User {
 
 model Company {
   id            String        @id @default(cuid()) @db.VarChar()
-  name          String        @db.VarChar()
+  name          String?       @db.VarChar()
+  email         String?       @db.VarChar()
+  taxNumber     String?       @map("tax_number") @db.VarChar()
+  phone         String?       @db.VarChar()
   line1         String?       @db.VarChar()
   city          String?       @db.VarChar()
   state         String?       @db.VarChar()
   postalCode    String?       @map("postal_code") @db.VarChar()
   country       String?       @db.VarChar()
-  taxNumber     String?       @map("tax_number") @db.VarChar()
   ownerId       String        @unique @db.VarChar()
   owner         User          @relation(fields: [ownerId], references: [id])
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
@@ -42,41 +45,41 @@ model Company {
 }
 
 model Client {
-  id          String    @id @default(cuid()) @db.VarChar()
-  email       String    @unique @db.VarChar()
-  companyName String?   @map("company_name") @db.VarChar()
-  firstName   String?   @map("first_name") @db.VarChar()
-  lastName    String?   @map("last_name") @db.VarChar()
-  taxNumber   String?   @map("tax_number") @db.VarChar()
-  line1       String?   @db.VarChar()
-  city        String?   @db.VarChar()
-  state       String?   @db.VarChar()
-  postalCode  String?   @map("postal_code") @db.VarChar()
-  country     String?   @db.VarChar()
-  companyId   String    @map("company_id") @db.VarChar()
-  company     Company   @relation(fields: [companyId], references: [id])
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  invoices    Invoice[]
+  id         String    @id @default(cuid()) @db.VarChar()
+  name       String    @db.VarChar()
+  email      String?   @db.VarChar()
+  taxNumber  String?   @map("tax_number") @db.VarChar()
+  phone      String?   @db.VarChar()
+  line1      String?   @db.VarChar()
+  city       String?   @db.VarChar()
+  state      String?   @db.VarChar()
+  postalCode String?   @map("postal_code") @db.VarChar()
+  country    String?   @db.VarChar()
+  companyId  String    @map("company_id") @db.VarChar()
+  company    Company   @relation(fields: [companyId], references: [id])
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  invoices   Invoice[]
 
   @@map("clients")
 }
 
 model Invoice {
   id               String        @id @default(cuid()) @db.VarChar()
-  number           Int           @db.Integer()
+  number           String        @db.VarChar()
   title            String        @db.VarChar()
-  note             String?       @db.VarChar()
+  notes            String?       @db.VarChar()
   status           InvoiceStatus @default(UNPAID)
-  amount           Decimal       @db.Decimal(18, 9)
+  netAmount        Decimal       @map("net_amount") @db.Decimal(18, 0)
   paymentAddressId String        @map("payment_ddress_id") @db.VarChar()
   paymentAddress   Address       @relation(fields: [paymentAddressId], references: [id])
+  paymentTokenId   String        @map("payment_token_id") @db.VarChar()
+  paymentToken     Token         @relation(fields: [paymentTokenId], references: [id])
   companyId        String        @map("company_id") @db.VarChar()
   company          Company       @relation(fields: [companyId], references: [id])
   clientId         String        @map("client_id") @db.VarChar()
   client           Client        @relation(fields: [clientId], references: [id])
-  tokenId          String        @map("token_id") @db.VarChar()
-  token            Token         @relation(fields: [tokenId], references: [id])
+  issuedAt         DateTime      @map("issued_at") @db.Timestamptz()
   paidAt           DateTime?     @map("paid_at") @db.Timestamptz()
   dueAt            DateTime      @map("due_at") @db.Timestamptz()
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz()
@@ -90,7 +93,7 @@ model InvoiceItem {
   id          String   @id @default(cuid()) @db.VarChar()
   description String   @db.VarChar()
   quantity    Int      @db.Integer()
-  price       Decimal  @db.Decimal(18, 9)
+  price       Decimal  @db.Decimal(18, 0)
   discount    Int?     @db.Integer()
   tax         Int?     @db.Integer()
   invoiceId   String   @map("invoice_id") @db.VarChar()
@@ -117,14 +120,15 @@ model Address {
 }
 
 model Token {
-  id        String    @id @default(cuid()) @db.VarChar()
-  address   String?   @unique @db.VarChar()
-  symbol    String    @db.VarChar()
-  decimals  Int       @db.Integer()
-  logo      String    @db.VarChar()
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  Invoice   Invoice[]
+  id            String    @id @default(cuid()) @db.VarChar()
+  address       String?   @unique @db.VarChar()
+  symbol        String    @db.VarChar()
+  decimals      Int       @db.Integer()
+  logo          String    @db.VarChar()
+  isNativeToken Boolean   @default(false) @map("is_native_token") @db.Boolean()
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  Invoice       Invoice[]
 
   @@map("tokens")
 }

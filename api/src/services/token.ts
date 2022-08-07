@@ -2,7 +2,9 @@ import argon2 from "argon2"
 import Joi from "joi"
 import { Service } from "typedi"
 import { prisma } from "../database/prisma"
+import { ApiError } from "../errors"
 import { IGetTokenPayload, IUser } from "../interfaces"
+import { utils } from "../utils"
 
 @Service()
 export class TokenService {
@@ -12,9 +14,11 @@ export class TokenService {
   }
 
   public async getToken(payload: IGetTokenPayload) {
-    const token = await prisma.token.findUnique({ where: { id: payload.id } })
+    const cleanPayload: IGetTokenPayload = utils.clean(payload)
+    const token = await prisma.token.findUnique({ where: { id: cleanPayload.id } })
+
     if (!token) {
-      throw new Error("Token does not exist")
+      throw new ApiError("Token does not exist", 404)
     }
 
     return token

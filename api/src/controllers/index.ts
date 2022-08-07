@@ -1,5 +1,7 @@
 export * from "./auth"
 export * from "./client"
+export * from "./company"
 export * from "./address"
 export * from "./token"
 export * from "./invoice"
+export * from "./user"

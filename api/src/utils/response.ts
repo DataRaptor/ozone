@@ -1,16 +1,16 @@
 import { FastifyReply } from "fastify"
 
 class Response {
-  public success(reply: FastifyReply, { code, message, data }: { code?: number; message: string; data?: any }) {
+  public success(reply: FastifyReply, { status, message, data }: { status?: number; message: string; data?: any }) {
     return reply
-      .code(code || 200)
+      .code(status || 200)
       .header("Content-Type", "application/json; charset=utf-8")
       .send({ success: true, message, data })
   }
 
-  public error(reply: FastifyReply, { code, message }: { code?: number; message: string }) {
+  public error(reply: FastifyReply, { status, message }: { status?: number; message: string }) {
     return reply
-      .code(code || 500)
+      .code(status || 500)
       .header("Content-Type", "application/json; charset=utf-8")
       .send({ success: false, message })
   }

@@ -2,68 +2,82 @@ import argon2 from "argon2"
 import Joi from "joi"
 import { Service } from "typedi"
 import { app } from "../app"
+import { walletAuthMessage } from "../config"
 import { prisma } from "../database/prisma"
+import { ApiError } from "../errors"
 import { ISignupUserPayload, ISigninUserPayload } from "../interfaces"
+import { emailSignInSchema, emailSignUpSchema, walletSignatureSchema } from "../schema"
+import { nacl, utils } from "../utils"
 
 @Service()
 export class AuthService {
-  public async signupUser(payload: ISignupUserPayload) {
-    switch (payload.mode) {
+  public async signUpUser(payload: ISignupUserPayload) {
+    const cleanPayload: ISignupUserPayload = utils.clean(payload)
+
+    switch (cleanPayload.mode) {
       case "wallet":
-        return await this.walletSignup(payload)
+        return await this.walletSignUp(cleanPayload)
       case "email":
-        return this.emailSignup(payload)
+        return this.emailSignUp(cleanPayload)
       default:
-        throw new Error("Authentication mode is not supported")
+        throw new ApiError("Authentication mode is not supported", 400)
     }
   }
 
-  public async signinUser(payload: ISigninUserPayload) {
-    switch (payload.mode) {
+  public async signInUser(payload: ISigninUserPayload) {
+    const cleanPayload: ISigninUserPayload = utils.clean(payload)
+
+    switch (cleanPayload.mode) {
       case "wallet":
-        return await this.walletSignin(payload)
+        return await this.walletSignIn(cleanPayload)
       case "email":
-        return this.emailSignin(payload)
+        return this.emailSignIn(cleanPayload)
       default:
-        throw new Error("Authentication mode is not supported")
+        throw new ApiError("Authentication mode is not supported", 400)
     }
   }
 
-  private async walletSignup(payload: ISignupUserPayload) {
-    const schema = Joi.object({
-      address: Joi.string().required().trim(),
-    })
+  private async walletSignUp(payload: ISignupUserPayload) {
+    const data: ISignupUserPayload = await walletSignatureSchema.validateAsync(payload, { allowUnknown: true })
 
-    const data: ISignupUserPayload = await schema.validateAsync(payload, { allowUnknown: true })
+    const message = `${walletAuthMessage} ${data.messageId}`
+    const isValidSignature = nacl.verifyMessage(message, data.signature!, data.address!)
+
+    if (!isValidSignature) {
+      throw new ApiError("Invalid signature", 409)
+    }
+
     const user = await prisma.user.findUnique({ where: { address: data.address } })
     if (user) {
-      throw new Error("User already exists")
+      throw new ApiError("User already exists", 409)
     }
 
     const newUser = await prisma.user.create({
       data: {
         address: data.address,
         company: {
-          create: { name: `${data.address}'s company` },
+          create: {
+            addresses: {
+              create: {
+                label: "Main",
+                address: data.address!,
+              },
+            },
+          },
         },
       },
     })
+
     return {
       token: app.jwt.sign({ id: newUser.id, address: newUser.address }),
     }
   }
 
-  private async emailSignup(payload: ISignupUserPayload) {
-    const schema = Joi.object({
-      name: Joi.string().required().trim(),
-      password: Joi.string().required().trim(),
-      email: Joi.string().email().required().trim(),
-    })
-
-    const data: ISignupUserPayload = await schema.validateAsync(payload, { allowUnknown: true })
+  private async emailSignUp(payload: ISignupUserPayload) {
+    const data: ISignupUserPayload = await emailSignUpSchema.validateAsync(payload, { allowUnknown: true })
     const user = await prisma.user.findUnique({ where: { email: data.email } })
     if (user) {
-      throw new Error("User already exists")
+      throw new ApiError("User already exists", 409)
     }
 
     const password = await argon2.hash(data.password!)
@@ -73,7 +87,7 @@ export class AuthService {
         email: data.email,
         password,
         company: {
-          create: { name: data.name! },
+          create: { name: data.name },
         },
       },
     })
@@ -83,37 +97,34 @@ export class AuthService {
     }
   }
 
-  private async emailSignin(payload: ISigninUserPayload) {
-    const schema = Joi.object({
-      address: Joi.string().required().trim(),
-    })
+  private async walletSignIn(payload: ISigninUserPayload) {
+    const data: ISigninUserPayload = await walletSignatureSchema.validateAsync(payload, { allowUnknown: true })
 
-    const data = await schema.validateAsync(payload, { allowUnknown: true })
+    const message = `${walletAuthMessage} ${data.messageId}`
+    const isValidSignature = nacl.verifyMessage(message, data.signature!, data.address!)
+    if (!isValidSignature) {
+      throw new ApiError("Invalid signature", 400)
+    }
+
     const user = await prisma.user.findUnique({ where: { address: data.address } })
-
     if (!user) {
-      throw new Error("User does not exist")
+      throw new ApiError("User does not exist", 404)
     }
 
     return { token: app.jwt.sign({ id: user.id, address: user.address }) }
   }
 
-  private async walletSignin(payload: ISigninUserPayload) {
-    const schema = Joi.object({
-      password: Joi.string().required().trim(),
-      email: Joi.string().email().required().trim(),
-    })
-
-    const data = await schema.validateAsync(payload, { allowUnknown: true })
+  private async emailSignIn(payload: ISigninUserPayload) {
+    const data: ISigninUserPayload = await emailSignInSchema.validateAsync(payload, { allowUnknown: true })
     const user = await prisma.user.findUnique({ where: { email: data.email } })
 
     if (!user) {
-      throw new Error("User does not exist")
+      throw new ApiError("User does not exist", 404)
     }
 
-    const isValidPassword = await argon2.verify(user.password!, data.password)
+    const isValidPassword = await argon2.verify(user.password!, data.password!)
     if (!isValidPassword) {
-      throw new Error("The password provided is invalid")
+      throw new ApiError("The password provided is invalid", 400)
     }
 
     return { token: app.jwt.sign({ id: user.id, email: user.email }) }

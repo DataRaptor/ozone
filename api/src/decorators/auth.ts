@@ -13,7 +13,6 @@ export async function auth(request: FastifyRequest, reply: FastifyReply) {
 
     request.user = user
   } catch (err: any) {
-    console.log(err)
-    response.error(reply, { message: err.message, code: 401 })
+    response.error(reply, { message: err.message, status: 401 })
   }
 }
