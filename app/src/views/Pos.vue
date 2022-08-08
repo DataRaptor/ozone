@@ -147,6 +147,16 @@ export default {
       }
     }
 
+    onMounted(async () => {
+      try {
+        state.loading = true
+        await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()])
+        state.loading = false
+      } catch (e) {
+        toast.error(e)
+      }
+    })
+
     return { state, input }
   },
 }
