@@ -1,11 +1,11 @@
 import { FastifyInstance } from "fastify"
 import Container from "typedi"
 import { AddressController } from "../controllers"
+import { AppInstance } from "../interfaces"
 
-export async function address(app: FastifyInstance) {
+export async function address(app: AppInstance) {
   const controller = Container.get(AddressController)
 
-  // @ts-ignore
   const onRequest = [app.authenticate]
 
   app.post("/", { onRequest }, controller.addAddress.bind(controller))

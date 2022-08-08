@@ -1,7 +1,8 @@
 <template>
-  <h5 class="h5 mb-5">Create an invoice</h5>
+  <h5 class="h5 mb-5">Edit invoice</h5>
 
-  <v-card flat>
+  <Loader v-if="state.loading" />
+  <v-card v-else flat>
     <v-row>
       <v-col cols="12" class="py-0">
         <v-text-field
@@ -355,9 +356,10 @@ import { storeToRefs } from "pinia"
 import { addressService, clientService, invoiceService, tokenService } from "../../services"
 import { tally, toast, utils } from "../../utils"
 import { useRoute } from "vue-router"
+import Loader from "../../components/Loader.vue"
 
 export default {
-  components: { EditClient, NewClient, NewAddress, EditCompany },
+  components: { EditClient, NewClient, NewAddress, EditCompany, Loader },
   setup() {
     const { clients } = storeToRefs(useClientStore())
     const { company } = storeToRefs(useCompanyStore())
@@ -377,7 +379,13 @@ export default {
 
     const route = useRoute()
     const state = reactive({
-      modals: { editClient: null, newClient: null, newAddress: null, editCompany: null },
+      loading: false,
+      modals: {
+        editClient: null,
+        newClient: null,
+        newAddress: null,
+        editCompany: null,
+      },
       company,
       clients,
       addresses,
@@ -464,12 +472,20 @@ export default {
     }
 
     onMounted(async () => {
-      await Promise.all([
-        invoiceService.loadInvoice(route.params.id),
-        clientService.loadClients(),
-        addressService.loadAddresses(),
-        tokenService.loadTokens(),
-      ])
+      try {
+        state.loading = true
+
+        await Promise.all([
+          invoiceService.loadInvoice(route.params.id),
+          clientService.loadClients(),
+          addressService.loadAddresses(),
+          tokenService.loadTokens(),
+        ])
+      } catch (e) {
+        toast.error(e.message)
+      } finally {
+        state.loading = false
+      }
     })
 
     return {

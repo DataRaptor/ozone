@@ -1,12 +1,12 @@
 <template>
-  <div class="d-flex mb-5">
-    <h5 class="h5">Draft Invoices</h5>
-    <v-spacer />
-    <v-btn flat variant="text" density="compact" color="primary">Create an invoice</v-btn>
-  </div>
+  <v-row>
+    <v-col md="10" cols="12" class="mx-auto">
+      <div class="d-flex mb-5">
+        <h5 class="h5">Draft Invoices</h5>
+        <v-spacer />
+        <v-btn flat variant="text" density="compact" color="primary">Create an invoice</v-btn>
+      </div>
 
-  <v-row class="mt-3">
-    <v-col class="py-0" md="6" cols="12">
       <v-text-field
         variant="outlined"
         color="primary"
@@ -14,57 +14,59 @@
         prepend-inner-icon="mdi-magnify"
         label="Search invoices"
       />
-    </v-col>
-  </v-row>
 
-  <v-row>
-    <v-col>
-      <v-table>
-        <thead>
-          <tr>
-            <th class="text-left">Invoice Number</th>
-            <th class="text-left">Title</th>
-            <th class="text-left">Amount</th>
-            <th class="text-left">Client</th>
-            <th class="text-left">Last Updated</th>
-            <!-- <th></th> -->
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(invoice, i) in invoices" :key="i" @click="() => $router.push(`/invoices/${invoice.id}/edit`)">
-            <td>{{ i }}</td>
-            <td>{{ invoice.title }}</td>
-            <td>{{ invoice.netAmount }} {{ invoice.paymentToken.symbol }}</td>
-            <td>{{ invoice.client.name }}</td>
-            <td>{{ utils.formatDate(invoice.updatedAt) }}</td>
-            <!-- <td>
-              <v-btn variant="text" color="primary" density="compact" :to="`/invoices/${invoice.id}`">
-                view invoice
-              </v-btn>
-            </td> -->
-          </tr>
-        </tbody>
-      </v-table>
+      <template v-if="state.loading">
+        <Loader />
+      </template>
+      <template v-else>
+        <v-table>
+          <thead>
+            <tr>
+              <th class="text-left">Invoice Number</th>
+              <th class="text-left">Title</th>
+              <th class="text-left">Amount</th>
+              <th class="text-left">Client</th>
+              <th class="text-left">Last Updated</th>
+            </tr>
+          </thead>
+          <tbody v-if="invoices.length > 0">
+            <tr v-for="(invoice, i) in invoices" :key="i" @click="() => $router.push(`/invoices/${invoice.id}/edit`)">
+              <td>{{ i }}</td>
+              <td>{{ invoice.title }}</td>
+              <td>{{ invoice.netAmount }} {{ invoice.paymentToken.symbol }}</td>
+              <td>{{ invoice.client.name }}</td>
+              <td>{{ utils.formatDate(invoice.updatedAt) }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+        <Empty message="Ooops... You do not have any draft invoice" v-if="invoices.length < 1" />
+      </template>
     </v-col>
   </v-row>
 </template>
 
 <script>
 import { storeToRefs } from "pinia"
-import { onMounted } from "vue"
+import { onMounted, reactive } from "vue"
 import { invoiceService } from "../../services"
 import { useInvoiceStore } from "../../stores"
 import { utils } from "../../utils"
+import Loader from "../../components/Loader.vue"
+import Empty from "../../components/Empty.vue"
 
 export default {
-  setup() {
-    const { invoices } = storeToRefs(useInvoiceStore())
+  components: { Loader, Empty },
 
+  setup() {
+    const state = reactive({ loading: false })
+    const { invoices } = storeToRefs(useInvoiceStore())
     onMounted(async () => {
+      state.loading = true
       await invoiceService.loadInvoices({ status: "DRAFT" })
+      state.loading = false
     })
 
-    return { invoices, utils }
+    return { state, invoices, utils }
   },
 }
 </script>

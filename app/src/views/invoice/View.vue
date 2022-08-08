@@ -1,6 +1,7 @@
 <template>
   <v-row>
-    <v-col cols="12" md="8" offset-md="2">
+    <Loader v-if="state.loading" />
+    <v-col v-else cols="12" md="8" offset-md="2">
       <v-card>
         <v-card-text class="px-5 py-10">
           <div class="mb-5 d-md-flex justify-md-space-between">
@@ -154,28 +155,33 @@
 </template>
 
 <script>
-import { onMounted } from "vue"
+import { onMounted, reactive } from "vue"
 import { storeToRefs } from "pinia"
 import { useRoute } from "vue-router"
 import { useInvoiceStore } from "../../stores"
 import { invoiceService } from "../../services"
 import { toast, utils, web3 } from "../../utils"
+import Loader from "../../components/Loader.vue"
 
 export default {
   setup() {
     const route = useRoute()
     const { invoice } = storeToRefs(useInvoiceStore())
-
+    const state = reactive({ loading: true })
     onMounted(async () => {
       try {
+        state.loading = true
         await invoiceService.loadInvoice(route.params.id)
       } catch (e) {
         toast.error(e.message)
+      } finally {
+        state.loading = false
       }
     })
 
-    return { invoice, utils, web3 }
+    return { state, invoice, utils, web3 }
   },
+  components: { Loader },
 }
 </script>
 

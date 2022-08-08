@@ -1,6 +1,21 @@
 <template>
   <div class="mb-5">
-    <v-btn class="d-block d-md-none" icon="mdi-menu" variant="text" @click.stop="drawer = !drawer"></v-btn>
+    <div class="d-flex pa-2">
+      <v-btn class="d-block d-md-none" icon="mdi-menu" variant="text" @click.stop="drawer = !drawer"></v-btn>
+      <v-spacer />
+
+      <v-btn variant="text" prepend-icon="mdi-account">
+        {{ user.name || user.address }}
+
+        <v-menu activator="parent">
+          <v-list>
+            <v-list-item v-for="(item, index) in items" :key="index" :value="index">
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
+    </div>
 
     <v-navigation-drawer v-model="drawer">
       <template v-slot:prepend>
@@ -17,17 +32,24 @@
 
       <v-divider></v-divider>
 
-      <v-list density="compact" nav>
+      <v-list nav>
         <template v-for="(item, i) in items" :key="i">
-          <v-list-group v-if="item.children">
+          <v-list-group active-color="primary" v-if="item.children">
             <template v-slot:activator="{ props }">
-              <v-list-item active-color="primary" v-bind="props" :prepend-icon="item.icon" :title="item.title" />
+              <v-list-item
+                class="font-weight-medium"
+                active-color="primary"
+                v-bind="props"
+                :prepend-icon="item.icon"
+                :title="item.title"
+              />
             </template>
 
             <v-list-item
               link
-              :to="child.path"
               :key="i"
+              :to="child.path"
+              class="font-weight-medium"
               :title="child.title"
               active-color="primary"
               :prepend-icon="child.icon"
@@ -37,17 +59,25 @@
 
           <v-list-item
             link
-            active-color="primary"
             v-else
-            :prepend-icon="item.icon"
-            :title="item.title"
             :to="item.path"
+            class="font-weight-medium"
+            :title="item.title"
+            active-color="primary"
+            :prepend-icon="item.icon"
           />
         </template>
 
         <v-divider class="my-3" />
 
-        <v-list-item link active-color="primary" prepend-icon="mdi-cog-outline" title="Settings" to="/settings" />
+        <v-list-item
+          link
+          to="/settings"
+          title="Settings"
+          class="font-weight-medium"
+          active-color="primary"
+          prepend-icon="mdi-cog-outline"
+        />
       </v-list>
 
       <template v-slot:append>

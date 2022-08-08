@@ -1,7 +1,8 @@
 <template>
   <h5 class="h5 mb-5">Create an invoice</h5>
 
-  <v-card flat>
+  <Loader v-if="state.loading" />
+  <v-card v-else flat>
     <v-row>
       <v-col cols="12" class="py-0">
         <v-text-field
@@ -354,9 +355,10 @@ import { useAddressStore, useClientStore, useCompanyStore, useTokenStore } from 
 import { storeToRefs } from "pinia"
 import { addressService, clientService, invoiceService, tokenService } from "../../services"
 import { tally, toast, utils } from "../../utils"
+import Loader from "../../components/Loader.vue"
 
 export default {
-  components: { EditClient, NewClient, NewAddress, EditCompany },
+  components: { EditClient, NewClient, NewAddress, EditCompany, Loader },
   setup() {
     const { clients } = storeToRefs(useClientStore())
     const { company } = storeToRefs(useCompanyStore())
@@ -374,7 +376,13 @@ export default {
     }
 
     const state = reactive({
-      modals: { editClient: null, newClient: null, newAddress: null, editCompany: null },
+      loading: false,
+      modals: {
+        editClient: null,
+        newClient: null,
+        newAddress: null,
+        editCompany: null,
+      },
       company,
       clients,
       addresses,
@@ -465,9 +473,12 @@ export default {
 
     onMounted(async () => {
       try {
+        state.loading = true
         await Promise.all([clientService.loadClients(), addressService.loadAddresses(), tokenService.loadTokens()])
       } catch (e) {
         toast.error(e)
+      } finally {
+        state.loading = false
       }
     })
 

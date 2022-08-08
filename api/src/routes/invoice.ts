@@ -1,11 +1,10 @@
 import Container from "typedi"
-import { FastifyInstance } from "fastify"
 import { InvoiceController } from "../controllers"
+import { AppInstance } from "../interfaces"
 
-export async function invoice(app: FastifyInstance) {
+export async function invoice(app: AppInstance) {
   const controller = Container.get(InvoiceController)
 
-  // @ts-ignore
   const onRequest = [app.authenticate]
 
   app.post("/", { onRequest }, controller.createInvoice.bind(controller))

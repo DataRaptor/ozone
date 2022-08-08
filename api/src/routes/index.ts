@@ -1,11 +1,11 @@
 import { FastifyInstance } from "fastify"
 import { auth } from "./auth"
+import { user } from "./user"
+import { token } from "./token"
 import { client } from "./client"
 import { address } from "./address"
-import { token } from "./token"
-import { invoice } from "./invoice"
-import { user } from "./user"
 import { company } from "./company"
+import { invoice } from "./invoice"
 
 export async function routes(app: FastifyInstance) {
   app.register(auth, { prefix: "auth" })

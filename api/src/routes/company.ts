@@ -1,11 +1,10 @@
-import { FastifyInstance } from "fastify"
 import Container from "typedi"
 import { CompanyController } from "../controllers"
+import { AppInstance } from "../interfaces"
 
-export async function company(app: FastifyInstance) {
+export async function company(app: AppInstance) {
   const controller = Container.get(CompanyController)
 
-  // @ts-ignore
   const onRequest = [app.authenticate]
 
   app.get("/", { onRequest }, controller.getCompanies.bind(controller))

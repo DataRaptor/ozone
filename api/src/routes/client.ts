@@ -1,11 +1,10 @@
-import { FastifyInstance } from "fastify"
 import Container from "typedi"
 import { ClientController } from "../controllers"
+import { AppInstance } from "../interfaces"
 
-export async function client(app: FastifyInstance) {
+export async function client(app: AppInstance) {
   const controller = Container.get(ClientController)
 
-  // @ts-ignore
   const onRequest = [app.authenticate]
 
   app.post("/", { onRequest }, controller.addClient.bind(controller))
