@@ -168,7 +168,6 @@
           density="compact"
           color="primary"
           variant="outlined"
-          :value="state.tokens[0]"
           return-object
         >
           <template v-slot:append-inner>

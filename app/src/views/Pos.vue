@@ -10,13 +10,7 @@
           <div class="">
             <div class="">
               <v-label class="mb-2">Select Payment Token</v-label>
-              <v-select
-                :items="tokens"
-                item-title="symbol"
-                variant="outlined"
-                density="compact"
-                :value="tokens[0].id"
-              />
+              <v-select :items="tokens" item-title="symbol" variant="outlined" density="compact" />
             </div>
 
             <div class="">
