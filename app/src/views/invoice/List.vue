@@ -4,10 +4,10 @@
       <div class="d-flex mb-5">
         <h5 class="h5">Invoices</h5>
         <v-spacer />
-        <v-btn flat variant="text" density="compact" color="primary">Create an invoice</v-btn>
+        <v-btn flat variant="text" density="compact" color="primary" to="/invoices/new">Create new invoice</v-btn>
       </div>
 
-      <v-row class="mt-3">
+      <v-row>
         <v-col class="py-0" md="6" cols="12">
           <v-text-field
             variant="outlined"
@@ -29,35 +29,31 @@
         </v-col>
       </v-row>
 
-      <template v-if="state.loading">
-        <Loader />
-      </template>
+      <Loader v-if="state.loading" />
+      <v-table v-else class="mt-3">
+        <thead>
+          <tr>
+            <th>Invoice Number</th>
+            <th>Title</th>
+            <th>Amount</th>
+            <th>Client</th>
+            <th>Creation Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody v-if="invoices.length > 0">
+          <tr v-for="(invoice, i) in invoices" :key="i" @click="() => $router.push(`/invoices/${invoice.id}`)">
+            <td>{{ i }}</td>
+            <td>{{ invoice.title }}</td>
+            <td>{{ invoice.netAmount }} {{ invoice.paymentToken.symbol }}</td>
+            <td>{{ invoice.client.name }}</td>
+            <td>{{ invoice.issuedAt }}</td>
+            <td><v-chip label color="success">Paid</v-chip></td>
+          </tr>
+        </tbody>
+      </v-table>
 
-      <template v-else>
-        <v-table class="mt-3">
-          <thead>
-            <tr>
-              <th>Invoice Number</th>
-              <th>Title</th>
-              <th>Amount</th>
-              <th>Client</th>
-              <th>Creation Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody v-if="invoices.length > 0">
-            <tr v-for="(invoice, i) in invoices" :key="i" @click="() => $router.push(`/invoices/${invoice.id}`)">
-              <td>{{ i }}</td>
-              <td>{{ invoice.title }}</td>
-              <td>{{ invoice.netAmount }} {{ invoice.paymentToken.symbol }}</td>
-              <td>{{ invoice.client.name }}</td>
-              <td>{{ invoice.issuedAt }}</td>
-              <td><v-chip label color="success">Paid</v-chip></td>
-            </tr>
-          </tbody>
-        </v-table>
-        <Empty message="Ooops... No sent invoices yet" v-if="invoices.length < 1" />
-      </template>
+      <Empty message="Ooops... No sent invoices yet" v-if="invoices.length < 1" />
     </v-col>
   </v-row>
 </template>
@@ -69,6 +65,7 @@ import { useInvoiceStore } from "../../stores"
 import { invoiceService } from "../../services"
 import Loader from "../../components/Loader.vue"
 import Empty from "../../components/Empty.vue"
+import { toast } from "../../utils"
 
 export default {
   components: { Loader, Empty },
@@ -78,9 +75,14 @@ export default {
     const state = reactive({ loading: false })
 
     onMounted(async () => {
-      state.loading = true
-      await invoiceService.loadInvoices({})
-      state.loading = false
+      try {
+        state.loading = true
+        await invoiceService.loadInvoices({})
+      } catch (e) {
+        toast.error(e.message)
+      } finally {
+        state.loading = false
+      }
     })
 
     return { state, invoices }

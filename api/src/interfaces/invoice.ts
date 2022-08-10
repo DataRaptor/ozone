@@ -36,4 +36,4 @@ export interface IGetInvoicesPayload {
   status?: InvoiceStatus
 }
 
-export type InvoiceStatus = "DRAFT" | "UNPAID" | "APPROVED" | "REJECTED" | "PAID"
+export type InvoiceStatus = "DRAFT" | "PENDING" | "APPROVED" | "REJECTED" | "PAID"

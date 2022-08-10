@@ -164,6 +164,7 @@ import { toast, utils, web3 } from "../../utils"
 import Loader from "../../components/Loader.vue"
 
 export default {
+  components: { Loader },
   setup() {
     const route = useRoute()
     const { invoice } = storeToRefs(useInvoiceStore())
@@ -181,7 +182,6 @@ export default {
 
     return { state, invoice, utils, web3 }
   },
-  components: { Loader },
 }
 </script>
 

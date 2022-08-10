@@ -1,17 +1,17 @@
 <template>
-  <div class="mb-5">
+  <section>
     <div class="d-flex pa-2">
       <v-btn class="d-block d-md-none" icon="mdi-menu" variant="text" @click.stop="drawer = !drawer"></v-btn>
       <v-spacer />
 
       <v-btn variant="text" prepend-icon="mdi-account">
-        {{ user.name || user.address }}
+        {{ user.name || utils.truncateAddress(user.address) }}
 
         <v-menu activator="parent">
           <v-list>
-            <v-list-item v-for="(item, index) in items" :key="index" :value="index">
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item>
+            <v-list-item density="compact" prepend-icon="mdi-cog" link title="Settings" />
+            <v-list-item density="compact" prepend-icon="mdi-open-in-new" link title="View on explorer" />
+            <v-list-item density="compact" prepend-icon="mdi-logout" link title="Sign out" />
           </v-list>
         </v-menu>
       </v-btn>
@@ -19,15 +19,59 @@
 
     <v-navigation-drawer v-model="drawer">
       <template v-slot:prepend>
-        <v-list-item
-          link
-          class="py-3"
-          two-line
-          :prepend-avatar="user.avatar || `${config.avatarApiBaseUrl}?name=${user.name || user.address}`"
-          :title="user.name || user.address"
-          subtitle="Logged in"
-        >
-        </v-list-item>
+        <div class="d-flex my-3 justify-center">
+          <v-avatar class="mt-4" size="15">
+            <v-img src="/assets/images/ozone.png" />
+          </v-avatar>
+
+          <h5 class="mt-2 h5" style="color: rgb(98, 0, 238)">zone finance</h5>
+        </div>
+
+        <v-list nav class="nav-sub-list">
+          <v-list-group>
+            <template v-slot:activator="{ props }">
+              <v-list-item
+                border
+                lines="two"
+                v-bind="props"
+                density="compact"
+                id="menu-activator"
+                :title="company.name"
+                class="font-weight-medium"
+                :subtitle="user.name || utils.truncateAddress(user.address)"
+              />
+            </template>
+
+            <v-menu activator="#menu-activator" location="bottom">
+              <v-list nav density="compact">
+                <v-list-item
+                  link
+                  density="compact"
+                  prepend-icon="mdi-plus"
+                  title="Add new company"
+                  class="font-weight-medium secondary-text"
+                />
+
+                <v-divider class="my-1" />
+
+                <template v-if="companies.length > 0">
+                  <v-list-item
+                    density="compact"
+                    append-icon="mdi-arrow-right"
+                    v-for="(company, i) in companies"
+                    class="py-2"
+                    :key="i"
+                    :value="i"
+                    :title="company.name"
+                  />
+                </template>
+                <div v-else class="py-3">
+                  <Empty message="No other companies yet" />
+                </div>
+              </v-list>
+            </v-menu>
+          </v-list-group>
+        </v-list>
       </template>
 
       <v-divider></v-divider>
@@ -82,22 +126,26 @@
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block>Logout</v-btn>
+          <v-btn block flat color="primary" variant="tonal">Logout</v-btn>
         </div>
       </template>
     </v-navigation-drawer>
-  </div>
+  </section>
 </template>
 
 <script>
-import { storeToRefs } from "pinia"
 import { ref } from "vue"
 import { config } from "../config"
-import { useAuthStore } from "../stores"
+import { storeToRefs } from "pinia"
+import { useAuthStore, useCompanyStore } from "../stores"
+import { utils } from "../utils"
+import Empty from "./Empty.vue"
 
 export default {
+  components: { Empty },
   setup() {
     const { user } = storeToRefs(useAuthStore())
+    const { company, companies } = storeToRefs(useCompanyStore())
     const drawer = ref(null)
     const items = [
       {
@@ -133,13 +181,26 @@ export default {
         path: "/addresses",
       },
       {
+        title: "Payment Links",
+        icon: "mdi-link",
+        path: "/payment-links",
+      },
+      {
         title: "Point Of Sale",
         icon: "mdi-point-of-sale",
         path: "/pos",
       },
     ]
-
-    return { drawer, items, user, config }
+    return { drawer, items, user, config, company, companies, utils }
   },
 }
 </script>
+<!-- 
+<style>
+nav,
+nav .v-list,
+.nav-sub-list,
+.v-overlay__content {
+  /* background-color: #fafafa !important; */
+}
+</style> -->

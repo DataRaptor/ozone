@@ -10,12 +10,18 @@
           <div class="">
             <div class="">
               <v-label class="mb-2">Select Payment Token</v-label>
-              <v-select variant="outlined" density="compact" />
+              <v-select
+                :items="tokens"
+                item-title="symbol"
+                variant="outlined"
+                density="compact"
+                :value="tokens[0].id"
+              />
             </div>
 
             <div class="">
               <v-label class="mb-2">Select Payment Address</v-label>
-              <v-select variant="outlined" density="compact" />
+              <v-select :items="addresses" item-title="label" variant="outlined" density="compact" />
             </div>
           </div>
 
@@ -123,11 +129,17 @@
 </template>
 
 <script>
-import { reactive } from "vue"
+import { onMounted, reactive } from "vue"
+import { toast } from "../utils"
+import { addressService, tokenService } from "../services"
+import { storeToRefs } from "pinia"
+import { useAddressStore, useTokenStore } from "../stores"
 
 export default {
   setup() {
     const state = reactive({ window: null, amount: "0" })
+    const { addresses } = storeToRefs(useAddressStore())
+    const { tokens } = storeToRefs(useTokenStore())
 
     function input(value) {
       if (value === "del") {
@@ -151,13 +163,14 @@ export default {
       try {
         state.loading = true
         await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()])
-        state.loading = false
       } catch (e) {
-        toast.error(e)
+        toast.error(e.message)
+      } finally {
+        state.loading = false
       }
     })
 
-    return { state, input }
+    return { state, tokens, addresses, input }
   },
 }
 </script>

@@ -101,7 +101,7 @@ export default {
         }
 
         await authService.signUp(payload)
-        router.push("/")
+        window.location.href = "/"
       } catch (e) {
         toast.error(e.message)
       }

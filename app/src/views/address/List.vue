@@ -20,7 +20,7 @@
       <template v-else>
         <v-list v-if="addresses.length > 0" lines="two">
           <template v-for="(address, i) in addresses" :key="i">
-            <v-list-item class="mb-3" border link>
+            <v-list-item class="mb-3" border link :to="`/addresses/${address.id}`">
               <v-list-item-title class="mb-2">{{ address.label }}</v-list-item-title>
               <v-list-item-subtitle>{{ address.address }}</v-list-item-subtitle>
               <template v-slot:append>
@@ -56,14 +56,14 @@
 
 <script>
 import { onMounted, reactive } from "vue"
-import NewAddress from "../components/modals/address/New.vue"
-import EditAddress from "../components/modals/address/Edit.vue"
+import NewAddress from "../../components/modals/address/New.vue"
+import EditAddress from "../../components/modals/address/Edit.vue"
 import { storeToRefs } from "pinia"
-import { useAddressStore } from "../stores"
-import { addressService } from "../services"
-import { toast } from "../utils"
-import Loader from "../components/Loader.vue"
-import Empty from "../components/Empty.vue"
+import { useAddressStore } from "../../stores"
+import { addressService } from "../../services"
+import { toast } from "../../utils"
+import Loader from "../../components/Loader.vue"
+import Empty from "../../components/Empty.vue"
 
 export default {
   components: { NewAddress, EditAddress, Loader, Empty },

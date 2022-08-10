@@ -69,7 +69,7 @@ model Invoice {
   number           String        @db.VarChar()
   title            String        @db.VarChar()
   notes            String?       @db.VarChar()
-  status           InvoiceStatus @default(UNPAID)
+  status           InvoiceStatus @default(PENDING)
   netAmount        Decimal       @map("net_amount") @db.Decimal(18, 0)
   paymentAddressId String        @map("payment_ddress_id") @db.VarChar()
   paymentAddress   Address       @relation(fields: [paymentAddressId], references: [id])
@@ -121,6 +121,7 @@ model Address {
 
 model Token {
   id            String    @id @default(cuid()) @db.VarChar()
+  name          String?   @db.VarChar()
   address       String?   @unique @db.VarChar()
   symbol        String    @db.VarChar()
   decimals      Int       @db.Integer()
@@ -135,7 +136,7 @@ model Token {
 
 enum InvoiceStatus {
   DRAFT
-  UNPAID
+  PENDING
   APPROVED
   REJECTED
   PAID

@@ -2,7 +2,9 @@
   <div class="d-flex mb-5">
     <h4 class="h4">{{ client.name }}</h4>
   </div>
-  <v-row>
+
+  <Loader v-if="state.loading" />
+  <v-row v-else>
     <v-col cols="12" md="6">
       <div class="d-flex">
         <p class="h5 mb-3">Client Details</p>
@@ -76,13 +78,14 @@ import { storeToRefs } from "pinia"
 import { useRoute } from "vue-router"
 import EditClient from "../../components/modals/client/Edit.vue"
 import { toast } from "../../utils"
+import Loader from "../../components/Loader.vue"
 
 export default {
-  components: { EditClient },
+  components: { EditClient, Loader },
   setup() {
     const route = useRoute()
     const { client } = storeToRefs(useClientStore())
-    const state = reactive({ modals: { edit: null } })
+    const state = reactive({ loading: false, modals: { edit: null } })
 
     function toggleModal(p) {
       state.modals[p] = !state.modals[p]
@@ -90,9 +93,12 @@ export default {
 
     onMounted(async () => {
       try {
+        state.loading = true
         await clientService.loadClient(route.params.id)
       } catch (e) {
         toast.error(e.message)
+      } finally {
+        state.loading = false
       }
     })
 

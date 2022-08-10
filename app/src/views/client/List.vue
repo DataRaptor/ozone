@@ -21,25 +21,23 @@
       <v-table v-else>
         <thead>
           <tr>
-            <th class="text-left">Name</th>
-            <th class="text-left">Email Address</th>
-            <th class="text-left">Tax Number</th>
-            <th class="text-left"></th>
+            <th>Name</th>
+            <th>Email Address</th>
+            <th>Phone Number</th>
+            <th>Tax Number</th>
           </tr>
         </thead>
         <tbody v-if="clients.length > 0">
-          <tr v-for="(client, i) in clients" :key="i">
+          <tr v-for="(client, i) in clients" :key="i" @click="() => $router.push(`/clients/${client.id}`)">
             <td>{{ client.name }}</td>
             <td>{{ client.email || "N/A" }}</td>
+            <td>{{ client.phone || "N/A" }}</td>
             <td>{{ client.taxNumber || "N/A" }}</td>
-            <td>
-              <v-btn variant="text" color="primary" density="compact" :to="`/clients/${client.id}`">view client</v-btn>
-            </td>
           </tr>
         </tbody>
       </v-table>
 
-      <Empty v-if="clients.length < 1" message="No clients added yet" />
+      <Empty v-if="clients.length < 1" message="No client has been added yet" />
     </v-col>
   </v-row>
 

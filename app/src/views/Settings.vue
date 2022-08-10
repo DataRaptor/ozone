@@ -116,11 +116,11 @@ import { reactive } from "vue"
 import Loader from "../components/Loader.vue"
 
 export default {
+  components: { Loader },
   setup() {
     const state = reactive({ loading: false, tab: null })
 
     return { state }
   },
-  components: { Loader },
 }
 </script>

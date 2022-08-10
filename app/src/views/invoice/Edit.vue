@@ -160,7 +160,7 @@
         <v-select
           :items="state.tokens"
           v-model="invoice.paymentToken.id"
-          item-title="symbol"
+          item-title="name"
           item-value="id"
           type="select"
           density="compact"
@@ -194,7 +194,7 @@
           type="select"
           :items="state.addresses"
           v-model="invoice.paymentAddress.id"
-          item-title="address"
+          item-title="label"
           item-value="id"
           density="compact"
           color="primary"

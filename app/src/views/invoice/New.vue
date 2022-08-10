@@ -162,12 +162,13 @@
         <v-select
           :items="state.tokens"
           v-model="state.selectedToken"
-          item-title="symbol"
+          item-title="name"
           item-value="id"
           type="select"
           density="compact"
           color="primary"
           variant="outlined"
+          :value="state.tokens[0]"
           return-object
         >
           <template v-slot:append-inner>
@@ -196,7 +197,7 @@
           type="select"
           :items="state.addresses"
           v-model="state.selectedAddress"
-          item-title="address"
+          item-title="label"
           item-value="id"
           density="compact"
           color="primary"
@@ -476,7 +477,7 @@ export default {
         state.loading = true
         await Promise.all([clientService.loadClients(), addressService.loadAddresses(), tokenService.loadTokens()])
       } catch (e) {
-        toast.error(e)
+        toast.error(e.message)
       } finally {
         state.loading = false
       }

@@ -9,7 +9,8 @@ import InvoiceDrafts from "./views/invoice/Drafts.vue"
 import InvoiceNew from "./views/invoice/New.vue"
 import InvoiceView from "./views/invoice/View.vue"
 import InvoiceEdit from "./views/invoice/Edit.vue"
-import Address from "./views/Address.vue"
+import AddressList from "./views/address/List.vue"
+import AddressView from "./views/address/View.vue"
 import Pos from "./views/Pos.vue"
 import Settings from "./views/Settings.vue"
 
@@ -18,7 +19,9 @@ const routes = [
   { path: "/signin", name: "signin", component: Signin },
   { path: "/signup", name: "signup", component: Signup },
   { path: "/settings", name: "settings", component: Settings },
-  { path: "/addresses", name: "addresses", component: Address },
+
+  { path: "/addresses", name: "addresses", component: AddressList },
+  { path: "/addresses/:id", name: "address/View", component: AddressView },
 
   { path: "/clients", name: "clientList", component: ClientList },
   { path: "/clients/:id", name: "clientView", component: ClientView },
