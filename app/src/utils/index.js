@@ -1,5 +1,6 @@
 export * from "./toast"
 export * from "./connection"
+export * from "./solanapay"
 export * from "./tally"
 export * from "./utils"
 export * from "./web3"

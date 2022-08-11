@@ -10,12 +10,28 @@
           <div class="">
             <div class="">
               <v-label class="mb-2">Select Payment Token</v-label>
-              <v-select :items="tokens" item-title="symbol" variant="outlined" density="compact" />
+              <v-select
+                v-model="state.input.token"
+                :items="tokens"
+                :item-value="id"
+                item-title="symbol"
+                variant="outlined"
+                density="compact"
+                return-object
+              />
             </div>
 
             <div class="">
               <v-label class="mb-2">Select Payment Address</v-label>
-              <v-select :items="addresses" item-title="label" variant="outlined" density="compact" />
+              <v-select
+                v-model="state.input.address"
+                :items="addresses"
+                :item-value="id"
+                item-title="label"
+                variant="outlined"
+                density="compact"
+                return-object
+              />
             </div>
           </div>
 
@@ -38,7 +54,7 @@
 
           <div class="mb-5 text-center screen">
             <p class="mb-2 secondary-text">Enter amount</p>
-            <h1 class="h1">{{ state.amount }}</h1>
+            <h1 class="h1">{{ state.input.amount }}</h1>
           </div>
 
           <v-row>
@@ -114,48 +130,74 @@
           </v-row>
 
           <div class="d-flex mt-10 mb-3">
-            <v-btn flat block color="primary">Continue</v-btn>
+            <v-btn flat block color="primary" @click="generateQR">Continue</v-btn>
           </div>
         </v-col>
       </v-row>
+    </v-window-item>
+
+    <v-window-item :value="2">
+      <p></p>
+      <div class="qr"></div>
     </v-window-item>
   </v-window>
 </template>
 
 <script>
 import { onMounted, reactive } from "vue"
-import { toast } from "../utils"
+import { solanapay, toast } from "../utils"
 import { addressService, tokenService } from "../services"
 import { storeToRefs } from "pinia"
-import { useAddressStore, useTokenStore } from "../stores"
+import { useAddressStore, useCompanyStore, useTokenStore } from "../stores"
 
 export default {
   setup() {
-    const state = reactive({ window: null, amount: "0" })
+    const state = reactive({ window: null, qr: "", input: { amount: "0" } })
     const { addresses } = storeToRefs(useAddressStore())
+    const { company } = storeToRefs(useCompanyStore())
     const { tokens } = storeToRefs(useTokenStore())
 
     function input(value) {
       if (value === "del") {
-        if (state.amount !== "0") {
-          const result = state.amount.substring(0, state.amount.length - 1)
-          state.amount = result === "" ? "0" : result
+        if (state.input.amount !== "0") {
+          const result = state.input.amount.substring(0, state.input.amount.length - 1)
+          state.input.amount = result === "" ? "0" : result
         }
       } else {
-        if (value === "." && state.amount.includes(value)) return
+        if (value === "." && state.input.amount.includes(value)) return
         if (value !== "." && isNaN(Number(value))) return
-        if (state.amount === "0" && Number(value) === 0) return
-        if (state.amount === "0" && value !== ".") {
-          state.amount = value
+        if (state.input.amount === "0" && Number(value) === 0) return
+        if (state.input.amount === "0" && value !== ".") {
+          state.input.amount = value
         } else {
-          state.amount += value
+          state.input.amount += value
         }
       }
+    }
+
+    function generateQR() {
+      state.window = 2
+
+      const address = state.input.address && state.input.address.address
+      const token = state.input.token && state.input.token.address
+
+      const data = {
+        amount: state.input.amount,
+        recipient: address,
+        token: token,
+        label: company.name,
+      }
+
+      console.log(data)
+      const qr = solanapay.getQR(data)
+      console.log(qr)
+      qr.append(document.querySelector(".qr"))
     }
 
     onMounted(async () => {
       try {
         state.loading = true
+
         await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()])
       } catch (e) {
         toast.error(e.message)
@@ -164,7 +206,7 @@ export default {
       }
     })
 
-    return { state, tokens, addresses, input }
+    return { state, tokens, addresses, input, generateQR }
   },
 }
 </script>
