@@ -9,8 +9,7 @@
 
         <v-menu activator="parent">
           <v-list>
-            <v-list-item density="compact" prepend-icon="mdi-cog" link title="Settings" />
-            <v-list-item density="compact" prepend-icon="mdi-open-in-new" link title="View on explorer" />
+            <v-list-item density="compact" prepend-icon="mdi-cog-outline" link title="Settings" />
             <v-list-item density="compact" prepend-icon="mdi-logout" link title="Sign out" />
           </v-list>
         </v-menu>
@@ -43,7 +42,7 @@
             </template>
 
             <v-menu activator="#menu-activator" location="bottom">
-              <v-list nav density="compact">
+              <v-list nav density="compact" style="width: 230px">
                 <v-list-item
                   link
                   density="compact"
@@ -134,19 +133,19 @@
 </template>
 
 <script>
-import { ref } from "vue"
-import { config } from "../config"
-import { storeToRefs } from "pinia"
-import { useAuthStore, useCompanyStore } from "../stores"
-import { utils } from "../utils"
-import Empty from "./Empty.vue"
+import { ref } from "vue";
+import { config } from "../config";
+import { storeToRefs } from "pinia";
+import { useAuthStore, useCompanyStore } from "../stores";
+import { utils } from "../utils";
+import Empty from "./Empty.vue";
 
 export default {
   components: { Empty },
   setup() {
-    const { user } = storeToRefs(useAuthStore())
-    const { company, companies } = storeToRefs(useCompanyStore())
-    const drawer = ref(null)
+    const { user } = storeToRefs(useAuthStore());
+    const { company, companies } = storeToRefs(useCompanyStore());
+    const drawer = ref(null);
     const items = [
       {
         title: "Overview",
@@ -190,11 +189,12 @@ export default {
         icon: "mdi-point-of-sale",
         path: "/pos",
       },
-    ]
-    return { drawer, items, user, config, company, companies, utils }
+    ];
+    return { drawer, items, user, config, company, companies, utils };
   },
-}
+};
 </script>
+
 <!-- 
 <style>
 nav,

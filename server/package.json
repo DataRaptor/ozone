@@ -1,12 +1,13 @@
 {
-  "name": "api",
+  "name": "serve",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "yarn build && yarn start",
+    "serve": "yarn build && yarn start",
     "build": "tsc",
-    "start": "node ./dist/index.js"
+    "start": "node ./dist/index.js",
+    "dev": "nodemon"
   },
   "dependencies": {
     "@fastify/cors": "^8.0.0",

@@ -11,27 +11,26 @@
 </template>
 
 <script>
-import { onMounted } from "vue"
-import AppBar from "./components/AppBar.vue"
-import { authService, companyService } from "./services"
-import { toast } from "./utils"
+import { onMounted } from "vue";
+import AppBar from "./components/AppBar.vue";
+import { authService, companyService } from "./services";
+import { toast } from "./utils";
 
 export default {
   name: "App",
   components: { AppBar },
 
   setup() {
-    const exludes = ["signup", "signin"]
+    const exludes = ["signup", "signin"];
 
     onMounted(async () => {
       try {
-        await authService.loadAuthenticatedUser()
-        await companyService.loadCompanies()
+        await Promise.all([authService.loadAuthenticatedUser(), companyService.loadCompanies()]);
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
-    })
-    return { exludes }
+    });
+    return { exludes };
   },
-}
+};
 </script>

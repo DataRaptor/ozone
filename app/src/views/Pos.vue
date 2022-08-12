@@ -14,7 +14,7 @@
                 v-model="state.input.token"
                 :items="tokens"
                 :item-value="id"
-                item-title="symbol"
+                item-title="name"
                 variant="outlined"
                 density="compact"
                 return-object
@@ -137,78 +137,83 @@
     </v-window-item>
 
     <v-window-item :value="2">
-      <p></p>
-      <div class="qr"></div>
+      <div class="text-center">
+        <h2 class="h2">Payment of {{ state.input.amount }} {{ state.input.token && state.input.token.symbol }}</h2>
+        <p>Please scan the QR code below to make your payment.</p>
+
+        <div id="qrCode" class="d-block mx-auto mt-10"></div>
+      </div>
     </v-window-item>
   </v-window>
 </template>
 
 <script>
-import { onMounted, reactive } from "vue"
-import { solanapay, toast } from "../utils"
-import { addressService, tokenService } from "../services"
-import { storeToRefs } from "pinia"
-import { useAddressStore, useCompanyStore, useTokenStore } from "../stores"
+import { storeToRefs } from "pinia";
+import { onMounted, reactive } from "vue";
+import { solanapay, toast } from "../utils";
+import { addressService, tokenService } from "../services";
+import { useAddressStore, useCompanyStore, useTokenStore } from "../stores";
 
 export default {
   setup() {
-    const state = reactive({ window: null, qr: "", input: { amount: "0" } })
-    const { addresses } = storeToRefs(useAddressStore())
-    const { company } = storeToRefs(useCompanyStore())
-    const { tokens } = storeToRefs(useTokenStore())
+    const state = reactive({ window: null, qr: "", input: { amount: "0" } });
+    const { addresses } = storeToRefs(useAddressStore());
+    const { company } = storeToRefs(useCompanyStore());
+    const { tokens } = storeToRefs(useTokenStore());
 
     function input(value) {
       if (value === "del") {
         if (state.input.amount !== "0") {
-          const result = state.input.amount.substring(0, state.input.amount.length - 1)
-          state.input.amount = result === "" ? "0" : result
+          const result = state.input.amount.substring(0, state.input.amount.length - 1);
+          state.input.amount = result === "" ? "0" : result;
         }
       } else {
-        if (value === "." && state.input.amount.includes(value)) return
-        if (value !== "." && isNaN(Number(value))) return
-        if (state.input.amount === "0" && Number(value) === 0) return
+        if (value === "." && state.input.amount.includes(value)) return;
+        if (value !== "." && isNaN(Number(value))) return;
+        if (state.input.amount === "0" && Number(value) === 0) return;
         if (state.input.amount === "0" && value !== ".") {
-          state.input.amount = value
+          state.input.amount = value;
         } else {
-          state.input.amount += value
+          state.input.amount += value;
         }
       }
     }
 
     function generateQR() {
-      state.window = 2
+      state.window = 2;
 
-      const address = state.input.address && state.input.address.address
-      const token = state.input.token && state.input.token.address
+      setTimeout(() => {
+        const address = state.input.address && state.input.address.address;
+        const token = state.input.token && state.input.token.address;
 
-      const data = {
-        amount: state.input.amount,
-        recipient: address,
-        token: token,
-        label: company.name,
-      }
+        const data = {
+          token,
+          recipient: address,
+          label: company.value.name,
+          amount: state.input.amount,
+          message: `Payment of ${state.input.amount} ${state.input.token && state.input.token.symbol}`,
+        };
 
-      console.log(data)
-      const qr = solanapay.getQR(data)
-      console.log(qr)
-      qr.append(document.querySelector(".qr"))
+        const qr = solanapay.getQR(data);
+        qr.append(document.querySelector("#qrCode"));
+      });
     }
 
     onMounted(async () => {
       try {
-        state.loading = true
+        state.loading = true;
 
-        await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()])
+        await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()]);
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       } finally {
-        state.loading = false
+        state.loading = false;
       }
-    })
+    });
 
-    return { state, tokens, addresses, input, generateQR }
+    return { state, tokens, addresses, input, generateQR };
   },
-}
+};
 </script>
 <style scoped>
 .v-col .v-btn {

@@ -3,5 +3,5 @@
   "ext": "ts",
   "ignore": ["*.test.ts", "node_modules"],
   "delay": "3",
-  "exec": "yarn dev"
+  "exec": "yarn serve"
 }

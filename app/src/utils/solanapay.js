@@ -1,38 +1,39 @@
-import { createQR, encodeURL } from "@solana/pay"
-import { Keypair, PublicKey } from "@solana/web3.js"
-import BigNumber from "bignumber.js"
+import { createQR, encodeURL, findReference, validateTransfer } from "@solana/pay";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import BigNumber from "bignumber.js";
 
 export const solanapay = {
   getQR(data) {
-    return createQR(solanapay.generateRequestLink(data))
+    console.log(data);
+    return createQR(solanapay.generateRequestLink(data), 400);
   },
 
-  generateRequestLink({ recipient, amount, token } = {}) {
-    const amt = new BigNumber(amount)
-    const reference = new Keypair().publicKey
-    const recipientAddress = new PublicKey(recipient)
-    // const splToken = new PublicKey(token)
+  generateRequestLink({ recipient, amount, token, label, message } = {}) {
+    amount = new BigNumber(amount);
+    const reference = new Keypair().publicKey;
+    const recipientPulicKey = new PublicKey(recipient);
 
-    if (!PublicKey.isOnCurve(recipientAddress)) {
-      throw new Error("Invalid merchant address...")
+    if (!PublicKey.isOnCurve(recipientPulicKey)) {
+      throw new Error("Invalid merchant address...");
     }
 
-    // if (!PublicKey.isOnCurve(splToken)) {
-    //   throw new Error("Invalid token address...")
-    // }
+    let splToken;
 
-    const label = "Jungle Cats store"
-    const message = "Jungle Cats store - your order - #001234"
-    const memo = "JC#4098"
+    if (token) {
+      splToken = new PublicKey(token);
+      if (!PublicKey.isOnCurve(splToken)) {
+        throw new Error("Invalid token address...");
+      }
+    }
 
-    return encodeURL({
-      recipient: recipientAddress,
-      amount: amt,
-      reference,
-      // splToken,
-      message,
-      label,
-      memo,
-    })
+    return encodeURL({ recipient: recipientPulicKey, reference, splToken, message, amount, label, memo: message });
   },
-}
+
+  async findReference(connection, reference) {
+    return await findReference(connection, reference, { finality: "confirmed" });
+  },
+
+  async validateTransfer({ signature, recipient, amount }, connection) {
+    return await validateTransfer(connection, signature, { recipient, amount });
+  },
+};
