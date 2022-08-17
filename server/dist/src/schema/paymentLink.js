@@ -10,6 +10,6 @@ exports.createPaymentLinkSchema = joi_1.default.object({
     tokenId: joi_1.default.string().required(),
     addressId: joi_1.default.string().required(),
     description: joi_1.default.string().required(),
-    amount: joi_1.default.string().optional().default(null),
+    amount: joi_1.default.number().optional().default(null),
     redirectUrl: joi_1.default.string().optional().default(null),
 });

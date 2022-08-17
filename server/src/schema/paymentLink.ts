@@ -5,6 +5,6 @@ export const createPaymentLinkSchema = Joi.object({
   tokenId: Joi.string().required(),
   addressId: Joi.string().required(),
   description: Joi.string().required(),
-  amount: Joi.string().optional().default(null),
+  amount: Joi.number().optional().default(null),
   redirectUrl: Joi.string().optional().default(null),
 });
