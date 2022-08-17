@@ -30,6 +30,11 @@ export class AuthService {
     authStore.setAuthData(signup.data.token, user.data);
   }
 
+  async signOut() {
+    const authStore = useAuthStore();
+    authStore.setAuthData(null, {});
+  }
+
   async signIn(data) {
     const authStore = useAuthStore();
 

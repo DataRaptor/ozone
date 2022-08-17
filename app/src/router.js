@@ -16,28 +16,49 @@ import AddressView from "./views/address/View.vue";
 import PosPayment from "./views/payment/Pos.vue";
 import PaymentHistory from "./views/payment/History.vue";
 import Settings from "./views/Settings.vue";
+import { useAuthStore } from "./stores";
 
 const routes = [
-  { path: "/signin", name: "signin", component: Signin },
-  { path: "/signup", name: "signup", component: Signup },
-  { path: "/settings", name: "settings", component: Settings },
+  { path: "/signin", name: "signin", component: Signin, meta: { guest: true } },
+  { path: "/signup", name: "signup", component: Signup, meta: { guest: true } },
+  { path: "/settings", name: "settings", component: Settings, meta: { auth: true } },
 
-  { path: "/addresses", name: "addresses", component: AddressList },
-  { path: "/addresses/:id", name: "address/View", component: AddressView },
+  { path: "/addresses", name: "addresses", component: AddressList, meta: { auth: true } },
+  { path: "/addresses/:id", name: "address/View", component: AddressView, meta: { auth: true } },
 
-  { path: "/clients", name: "clientList", component: ClientList },
-  { path: "/clients/:id", name: "clientView", component: ClientView },
+  { path: "/clients", name: "clientList", component: ClientList, meta: { auth: true } },
+  { path: "/clients/:id", name: "clientView", component: ClientView, meta: { auth: true } },
 
-  { path: "/payments/pos", name: "posPayment", component: PosPayment },
-  { path: "/payments/links", name: "paymentLinkList", component: PaymentLinkList },
-  { path: "/payments/history", name: "paymentHistory", component: PaymentHistory },
-  { path: "/pay/:id", name: "paymentLinkPay", component: PaymentLinkPay },
+  { path: "/payments/pos", name: "posPayment", component: PosPayment, meta: { auth: true } },
+  { path: "/payments/links", name: "paymentLinkList", component: PaymentLinkList, meta: { auth: true } },
+  { path: "/payments/history", name: "paymentHistory", component: PaymentHistory, meta: { auth: true } },
+  { path: "/pay/:id", name: "paymentLinkPay", component: PaymentLinkPay, meta: {} },
 
-  { path: "/invoices", name: "invoices", component: InvoiceList },
-  { path: "/invoices/drafts", name: "invoiceDrafts", component: InvoiceDrafts },
-  { path: "/invoices/new", name: "invoiceNew", component: InvoiceNew },
-  { path: "/invoices/:id", name: "invoiceView", component: InvoiceView },
-  { path: "/invoices/:id/edit", name: "invoiceEdit", component: InvoiceEdit },
+  { path: "/invoices", name: "invoices", component: InvoiceList, meta: { auth: true } },
+  { path: "/invoices/drafts", name: "invoiceDrafts", component: InvoiceDrafts, meta: { auth: true } },
+  { path: "/invoices/new", name: "invoiceNew", component: InvoiceNew, meta: { auth: true } },
+  { path: "/invoices/:id", name: "invoiceView", component: InvoiceView, meta: {} },
+  { path: "/invoices/:id/edit", name: "invoiceEdit", component: InvoiceEdit, meta: { auth: true } },
 ];
 
 export const router = createRouter({ history: createWebHistory(), routes });
+
+router.beforeEach((to) => {
+  const authStore = useAuthStore();
+
+  if (to.meta.auth) {
+    if (authStore.token) {
+      return true;
+    } else {
+      return "/signup";
+    }
+  } else if (to.meta.guest) {
+    if (!authStore.token) {
+      true;
+    } else {
+      return "/settings";
+    }
+  }
+
+  return true;
+});

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useRouter } from "vue-router";
+import { authService } from "../services";
 import { useAuthStore, useCompanyStore } from "../stores";
 import { config } from "./";
 
@@ -18,7 +20,9 @@ export const request = {
       },
       function (error) {
         if (error.response.status == 401) {
-          console.log("Invalid auth details");
+          const router = useRouter();
+          authService.signOut();
+          router.push("/signup");
         }
 
         return Promise.reject(error.response.data);
