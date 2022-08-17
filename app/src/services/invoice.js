@@ -4,7 +4,7 @@ import { useInvoiceStore } from "../stores";
 export class InvoiceService {
   async saveInvoice(data) {
     const invoice = await request.api.post("/invoices", data);
-    return invoice;
+    return invoice.data;
   }
 
   async getNextInvoiceNumber(data) {
