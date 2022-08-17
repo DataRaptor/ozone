@@ -10,7 +10,7 @@
         <v-menu activator="parent">
           <v-list>
             <v-list-item link to="/settings" density="compact" prepend-icon="mdi-cog-outline" title="Settings" />
-            <v-list-item link density="compact" prepend-icon="mdi-logout" title="Sign out" />
+            <v-list-item link density="compact" prepend-icon="mdi-logout" title="Logout" @click="logOut" />
           </v-list>
         </v-menu>
       </v-btn>
@@ -128,7 +128,7 @@
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block flat color="primary" variant="tonal">Logout</v-btn>
+          <v-btn block flat color="primary" variant="tonal" @click="logOut">Logout</v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -145,7 +145,8 @@ import { useAuthStore, useCompanyStore } from "../stores";
 import { utils } from "../utils";
 import NewCompany from "./modals/company/New.vue";
 import Empty from "./Empty.vue";
-import { companyService } from "../services";
+import { authService, companyService } from "../services";
+import { useRouter } from "vue-router";
 
 export default {
   components: { Empty, NewCompany },
@@ -153,6 +154,7 @@ export default {
     const { user } = storeToRefs(useAuthStore());
     const { company, companies } = storeToRefs(useCompanyStore());
     const drawer = ref(null);
+    const router = useRouter();
     const state = reactive({ modals: { newCompany: null } });
     const items = [
       {
@@ -212,7 +214,12 @@ export default {
       window.location.href = "/";
     }
 
-    return { state, drawer, items, user, config, company, companies, utils, toggleModal, switchCompany };
+    function logOut() {
+      authService.signOut();
+      router.push("/signup");
+    }
+
+    return { state, drawer, items, user, config, company, companies, utils, toggleModal, switchCompany, logOut };
   },
 };
 </script>
