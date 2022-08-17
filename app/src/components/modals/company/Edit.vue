@@ -3,7 +3,7 @@
     <v-card>
       <v-card-text class="py-5">
         <div class="d-flex">
-          <h5 class="h5 mb-6">Update company</h5>
+          <h5 class="h5 mb-6">Update your company</h5>
           <v-spacer />
           <v-btn flat density="compact" icon="mdi-close" @click="$emit('toggle-modal')" />
         </div>
@@ -109,6 +109,9 @@
               <v-label class="mb-3">Country</v-label>
               <v-select
                 v-model="state.input.country"
+                :items="state.countries"
+                item-value="code"
+                item-title="name"
                 variant="outlined"
                 density="compact"
                 color="primary"
@@ -125,33 +128,34 @@
 </template>
 
 <script>
-import { useCompanyStore } from "../../../stores"
-import { reactive, watch } from "vue"
-import { toast } from "../../../utils"
-import { companyService } from "../../../services"
+import { useCompanyStore } from "../../../stores";
+import { reactive, watch } from "vue";
+import { toast } from "../../../utils";
+import { companyService } from "../../../services";
+import { countries } from "../../../config/countries";
 
 export default {
   props: ["show"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
-    const companyStore = useCompanyStore()
-    const state = reactive({ input: { ...companyStore.company } })
+    const companyStore = useCompanyStore();
+    const state = reactive({ input: { ...companyStore.company }, countries });
 
     async function updateCompany() {
       try {
-        await companyService.updateCompany(companyStore.company.id, state.input)
-        ctx.emit("toggle-modal")
+        await companyService.updateCompany(companyStore.company.id, state.input);
+        ctx.emit("toggle-modal");
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
     }
 
     watch(
       () => companyStore.company,
       (n, o) => (state.input = { ...o, ...n })
-    )
+    );
 
-    return { state, updateCompany }
+    return { state, updateCompany };
   },
-}
+};
 </script>

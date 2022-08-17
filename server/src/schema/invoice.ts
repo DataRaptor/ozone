@@ -9,7 +9,7 @@ export const invoiceSchema = Joi.object({
   paymentTokenId: Joi.string().required(),
   paymentAddressId: Joi.string().required(),
   notes: Joi.string().optional().default(null),
-  status: Joi.string().optional().default(null),
+  status: Joi.string().required(),
   items: Joi.array()
     .items({
       id: Joi.string().optional(),
@@ -24,4 +24,14 @@ export const invoiceSchema = Joi.object({
     .optional()
     .empty(Joi.array().length(0))
     .default([]),
+});
+
+export const updateInvoiceStatusSchema = Joi.object({
+  status: Joi.string().required().valid("APPROVED", "REJECTED").trim(),
+  token: Joi.string().required().trim(),
+});
+
+export const completeInvoicePaymentSchema = Joi.object({
+  transactionId: Joi.string().required().trim(),
+  token: Joi.string().required().trim(),
 });

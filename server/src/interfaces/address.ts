@@ -1,14 +1,14 @@
 export interface IAddAddressPayload {
-  address: string
-  label: string
+  address: string;
+  label: string;
 }
 
 export interface IUpdateAddressPayload extends IGetAddressPayload {
-  address: IAddAddressPayload
+  address: IAddAddressPayload;
 }
 
 export interface IGetAddressPayload {
-  id: string
+  id: string;
 }
 
 export interface IDeleteAddressPayload extends IGetAddressPayload {}

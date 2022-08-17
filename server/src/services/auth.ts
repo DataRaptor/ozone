@@ -1,5 +1,4 @@
 import argon2 from "argon2";
-import Joi from "joi";
 import { Service } from "typedi";
 import { app } from "../app";
 import { walletAuthMessage } from "../config";
@@ -55,7 +54,7 @@ export class AuthService {
     const newUser = await prisma.user.create({
       data: {
         address: data.address,
-        company: {
+        companies: {
           create: {
             name: data.address,
             addresses: {
@@ -69,9 +68,7 @@ export class AuthService {
       },
     });
 
-    return {
-      token: app.jwt.sign({ id: newUser.id, address: newUser.address }),
-    };
+    return { token: app.jwt.sign({ id: newUser.id, address: newUser.address }) };
   }
 
   private async emailSignUp(payload: ISignupUserPayload) {
@@ -87,15 +84,13 @@ export class AuthService {
         name: data.name,
         email: data.email,
         password,
-        company: {
+        companies: {
           create: { name: data.name },
         },
       },
     });
 
-    return {
-      token: app.jwt.sign({ id: newUser.id, email: newUser.email }),
-    };
+    return { token: app.jwt.sign({ id: newUser.id, email: newUser.email }) };
   }
 
   private async walletSignIn(payload: ISigninUserPayload) {

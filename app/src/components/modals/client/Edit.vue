@@ -109,6 +109,9 @@
               <v-label class="mb-3">Country</v-label>
               <v-select
                 v-model="state.input.country"
+                :items="state.countries"
+                item-value="code"
+                item-title="name"
                 variant="outlined"
                 density="compact"
                 color="primary"
@@ -125,31 +128,32 @@
 </template>
 
 <script>
-import { reactive, watch } from "vue"
-import { clientService } from "../../../services"
-import { toast } from "../../../utils"
+import { reactive, watch } from "vue";
+import { countries } from "../../../config/countries";
+import { clientService } from "../../../services";
+import { toast } from "../../../utils";
 
 export default {
   props: ["client", "show"],
   emits: ["toggle-modal"],
   setup(props, ctx) {
-    const state = reactive({ input: { ...props.client } })
+    const state = reactive({ input: { ...props.client }, countries });
 
     async function updateClient() {
       try {
-        await clientService.updateClient(props.client.id, state.input)
-        ctx.emit("toggle-modal")
+        await clientService.updateClient(props.client.id, state.input);
+        ctx.emit("toggle-modal");
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
     }
 
     watch(
       () => props.client,
       (n, o) => (state.input = { ...o, ...n })
-    )
+    );
 
-    return { state, updateClient }
+    return { state, updateClient };
   },
-}
+};
 </script>

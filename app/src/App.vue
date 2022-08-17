@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <AppBar v-if="!exludes.includes($route.name)" />
+    <AppBar v-if="$route.query.bar != '0' && !exludes.includes($route.name)" />
 
     <v-main>
       <v-container>
@@ -11,9 +11,11 @@
 </template>
 
 <script>
+import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
 import AppBar from "./components/AppBar.vue";
 import { authService, companyService } from "./services";
+import { useAuthStore } from "./stores";
 import { toast } from "./utils";
 
 export default {
@@ -21,11 +23,14 @@ export default {
   components: { AppBar },
 
   setup() {
-    const exludes = ["signup", "signin"];
+    const exludes = ["signup", "signin", "paymentLinkPay"];
+    const { token } = storeToRefs(useAuthStore());
 
     onMounted(async () => {
       try {
-        await Promise.all([authService.loadAuthenticatedUser(), companyService.loadCompanies()]);
+        if (!!token.value) {
+          await Promise.all([authService.loadAuthenticatedUser(), companyService.loadCompanies()]);
+        }
       } catch (e) {
         toast.error(e.message);
       }

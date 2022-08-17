@@ -1,3 +1,3 @@
 export interface IGetTokenPayload {
-  id: string
+  id: string;
 }

@@ -1,16 +1,25 @@
-import { createQR, encodeURL, findReference, validateTransfer } from "@solana/pay";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  createQR,
+  encodeURL,
+  findReference,
+  FindReferenceError,
+  validateTransfer,
+  ValidateTransferError,
+} from "@solana/pay";
+import { PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
+import { connection as conn } from "./connection";
+
+const connection = conn.getConnection();
 
 export const solanapay = {
-  getQR(data) {
-    console.log(data);
-    return createQR(solanapay.generateRequestLink(data), 400);
+  getQR(data, size) {
+    return createQR(solanapay.generateRequestLink(data), size);
   },
 
-  generateRequestLink({ recipient, amount, token, label, message } = {}) {
+  generateRequestLink({ recipient, reference, amount, token, label, message } = {}) {
     amount = new BigNumber(amount);
-    const reference = new Keypair().publicKey;
+    const referencePublicKey = new PublicKey(reference);
     const recipientPulicKey = new PublicKey(recipient);
 
     if (!PublicKey.isOnCurve(recipientPulicKey)) {
@@ -26,14 +35,44 @@ export const solanapay = {
       }
     }
 
-    return encodeURL({ recipient: recipientPulicKey, reference, splToken, message, amount, label, memo: message });
+    return encodeURL({
+      label,
+      amount,
+      message,
+      splToken,
+      memo: message,
+      recipient: recipientPulicKey,
+      reference: referencePublicKey,
+    });
   },
 
-  async findReference(connection, reference) {
+  async findReference(reference) {
     return await findReference(connection, reference, { finality: "confirmed" });
   },
 
-  async validateTransfer({ signature, recipient, amount }, connection) {
-    return await validateTransfer(connection, signature, { recipient, amount });
+  async validateTransfer({ signature, recipient, amount, splToken }) {
+    return await validateTransfer(connection, signature, { recipient, amount, splToken });
+  },
+
+  waitForPayment({ reference, recipient, amount, splToken }, callback) {
+    reference = new PublicKey(reference);
+    recipient = new PublicKey(recipient);
+    splToken = splToken ? new PublicKey(splToken) : undefined;
+
+    async function execute() {
+      try {
+        const result = await solanapay.findReference(reference);
+        await solanapay.validateTransfer({ signature: result.signature, recipient, amount, splToken });
+        callback(result.signature);
+      } catch (e) {
+        if (!(e instanceof FindReferenceError) && !(e instanceof ValidateTransferError)) {
+          throw e;
+        }
+
+        setTimeout(execute, 200);
+      }
+    }
+
+    setTimeout(execute, 200);
   },
 };

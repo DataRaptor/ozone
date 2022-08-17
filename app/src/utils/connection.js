@@ -1,54 +1,61 @@
+import { Connection } from "@solana/web3.js";
+import { config } from "../config/config";
+
 const urls = {
   phantom: "https://phantom.app/",
   solflare: "https://solflare.com/",
   slope: "https://slope.finance/",
-}
+};
 
 export const connection = {
   provider(client) {
     if (client === "slope" && "Slope" in window) {
-      const provider = new window.Slope()
-      Object.assign(provider, window.slope)
+      const provider = new window.Slope();
+      Object.assign(provider, window.slope);
 
-      return provider
+      return provider;
     } else if (client in window) {
-      const provider = window[client]?.solana || window[client]
+      const provider = window[client]?.solana || window[client];
 
-      return provider
+      return provider;
     }
 
-    window.open(urls[client], "_blank")
+    window.open(urls[client], "_blank");
   },
 
   async connect(client) {
-    const provider = connection.provider(client)
-    const connect = await provider.connect()
+    const provider = connection.provider(client);
+    const connect = await provider.connect();
 
-    let publicKey
+    let publicKey;
     if (client === "slope") {
-      publicKey = connect.data.publicKey
+      publicKey = connect.data.publicKey;
     } else {
-      publicKey = provider.publicKey
+      publicKey = provider.publicKey;
     }
 
-    return publicKey.toString()
+    return publicKey.toString();
   },
 
   async signMessage(client, message) {
-    const provider = connection.provider(client)
-    const encodedMessage = new TextEncoder().encode(message)
+    const provider = connection.provider(client);
+    const encodedMessage = new TextEncoder().encode(message);
 
-    let signedMessage
+    let signedMessage;
 
     if (client === "slope") {
-      signedMessage = await provider.signMessage(encodedMessage, "utf8")
+      signedMessage = await provider.signMessage(encodedMessage, "utf8");
     } else {
       signedMessage = await provider.request({
         method: "signMessage",
         params: { message: encodedMessage, display: "utf8" },
-      })
+      });
     }
 
-    return signedMessage.data || signedMessage
+    return signedMessage.data || signedMessage;
   },
-}
+
+  getConnection() {
+    return new Connection(config.solana.url);
+  },
+};

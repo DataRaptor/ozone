@@ -9,8 +9,8 @@
 
         <v-menu activator="parent">
           <v-list>
-            <v-list-item density="compact" prepend-icon="mdi-cog-outline" link title="Settings" />
-            <v-list-item density="compact" prepend-icon="mdi-logout" link title="Sign out" />
+            <v-list-item link to="/settings" density="compact" prepend-icon="mdi-cog-outline" title="Settings" />
+            <v-list-item link density="compact" prepend-icon="mdi-logout" title="Sign out" />
           </v-list>
         </v-menu>
       </v-btn>
@@ -49,20 +49,23 @@
                   prepend-icon="mdi-plus"
                   title="Add new company"
                   class="font-weight-medium secondary-text"
+                  @click="toggleModal('newCompany')"
                 />
 
                 <v-divider class="my-1" />
 
                 <template v-if="companies.length > 0">
-                  <v-list-item
-                    density="compact"
-                    append-icon="mdi-arrow-right"
-                    v-for="(company, i) in companies"
-                    class="py-2"
-                    :key="i"
-                    :value="i"
-                    :title="company.name"
-                  />
+                  <template v-for="(c, i) in companies">
+                    <v-list-item
+                      density="compact"
+                      append-icon="mdi-arrow-right"
+                      class="py-2"
+                      :value="i"
+                      :title="c.name"
+                      @click="switchCompany(c.id)"
+                      v-if="company.id != c.id"
+                    />
+                  </template>
                 </template>
                 <div v-else class="py-3">
                   <Empty message="No other companies yet" />
@@ -130,27 +133,28 @@
       </template>
     </v-navigation-drawer>
   </section>
+
+  <NewCompany :show="state.modals.newCompany" @toggle-modal="toggleModal('newCompany')" />
 </template>
 
 <script>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { config } from "../config";
 import { storeToRefs } from "pinia";
 import { useAuthStore, useCompanyStore } from "../stores";
 import { utils } from "../utils";
+import NewCompany from "./modals/company/New.vue";
 import Empty from "./Empty.vue";
+import { companyService } from "../services";
 
 export default {
-  components: { Empty },
+  components: { Empty, NewCompany },
   setup() {
     const { user } = storeToRefs(useAuthStore());
     const { company, companies } = storeToRefs(useCompanyStore());
     const drawer = ref(null);
+    const state = reactive({ modals: { newCompany: null } });
     const items = [
-      {
-        title: "Overview",
-        icon: "mdi-view-dashboard-outline",
-      },
       {
         title: "Invoices",
         icon: "mdi-receipt",
@@ -170,6 +174,24 @@ export default {
         ],
       },
       {
+        title: "Payments",
+        icon: "mdi-credit-card-outline",
+        children: [
+          {
+            title: "Point Of Sale",
+            path: "/payments/pos",
+          },
+          {
+            title: "Payment links",
+            path: "/payments/links",
+          },
+          {
+            title: "Payments History",
+            path: "/payments/history",
+          },
+        ],
+      },
+      {
         title: "Clients",
         icon: "mdi-account-multiple-outline",
         path: "/clients",
@@ -179,28 +201,18 @@ export default {
         icon: "mdi-wallet-outline",
         path: "/addresses",
       },
-      {
-        title: "Payment Links",
-        icon: "mdi-link",
-        path: "/payment-links",
-      },
-      {
-        title: "Point Of Sale",
-        icon: "mdi-point-of-sale",
-        path: "/pos",
-      },
     ];
-    return { drawer, items, user, config, company, companies, utils };
+
+    function toggleModal(p) {
+      state.modals[p] = !state.modals[p];
+    }
+
+    function switchCompany(id) {
+      companyService.switchCompany(id);
+      window.location.href = "/";
+    }
+
+    return { state, drawer, items, user, config, company, companies, utils, toggleModal, switchCompany };
   },
 };
 </script>
-
-<!-- 
-<style>
-nav,
-nav .v-list,
-.nav-sub-list,
-.v-overlay__content {
-  /* background-color: #fafafa !important; */
-}
-</style> -->

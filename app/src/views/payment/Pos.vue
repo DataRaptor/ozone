@@ -7,6 +7,8 @@
             <h5 class="h5">Point Of Sale</h5>
           </div>
 
+          <p class="mb-5">Receive payments from your customers In-Person through the Point Of Sale System</p>
+
           <div class="">
             <div class="">
               <v-label class="mb-2">Select Payment Token</v-label>
@@ -59,17 +61,17 @@
 
           <v-row>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('1')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('1')">
                 <h2 class="h2">1</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('2')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('2')">
                 <h2 class="h2">2</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('3')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('3')">
                 <h2 class="h2">3</h2>
               </v-btn>
             </v-col>
@@ -77,17 +79,17 @@
 
           <v-row>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('4')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('4')">
                 <h2 class="h2">4</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('5')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('5')">
                 <h2 class="h2">5</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('6')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('6')">
                 <h2 class="h2">6</h2>
               </v-btn>
             </v-col>
@@ -95,17 +97,17 @@
 
           <v-row>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('7')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('7')">
                 <h2 class="h2">7</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('8')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('8')">
                 <h2 class="h2">8</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('9')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('9')">
                 <h2 class="h2">9</h2>
               </v-btn>
             </v-col>
@@ -113,50 +115,58 @@
 
           <v-row>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('.')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('.')">
                 <h2 class="h2">.</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('0')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('0')">
                 <h2 class="h2">0</h2>
               </v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn rounded flat class="ma-3" variant="tonal" @click="() => input('del')">
+              <v-btn rounded flat class="d-block mx-auto ma-3" variant="tonal" @click="() => input('del')">
                 <h2 class="h2"><v-icon icon="mdi-close" /></h2>
               </v-btn>
             </v-col>
           </v-row>
 
           <div class="d-flex mt-10 mb-3">
-            <v-btn flat block color="primary" @click="generateQR">Continue</v-btn>
+            <v-btn flat block color="primary" @click="makePayment">Continue</v-btn>
           </div>
         </v-col>
       </v-row>
     </v-window-item>
-
-    <v-window-item :value="2">
-      <div class="text-center">
-        <h2 class="h2">Payment of {{ state.input.amount }} {{ state.input.token && state.input.token.symbol }}</h2>
-        <p>Please scan the QR code below to make your payment.</p>
-
-        <div id="qrCode" class="d-block mx-auto mt-10"></div>
-      </div>
-    </v-window-item>
   </v-window>
+
+  <PayModal
+    :show="state.modals.pay"
+    :payment="state.payment"
+    :symbol="state.token.symbol"
+    @toggle-modal="toggleModal('pay')"
+    :completed="state.completed"
+  />
 </template>
 
 <script>
 import { storeToRefs } from "pinia";
 import { onMounted, reactive } from "vue";
-import { solanapay, toast } from "../utils";
-import { addressService, tokenService } from "../services";
-import { useAddressStore, useCompanyStore, useTokenStore } from "../stores";
+import { solanapay, toast } from "../../utils";
+import { addressService, tokenService, paymentService } from "../../services";
+import { useAddressStore, useCompanyStore, useTokenStore } from "../../stores";
+import PayModal from "../../components/modals/Pay.vue";
 
 export default {
+  components: { PayModal },
   setup() {
-    const state = reactive({ window: null, qr: "", input: { amount: "0" } });
+    const state = reactive({
+      window: null,
+      input: { amount: "0" },
+      payment: {},
+      token: {},
+      modals: { pay: null },
+    });
+
     const { addresses } = storeToRefs(useAddressStore());
     const { company } = storeToRefs(useCompanyStore());
     const { tokens } = storeToRefs(useTokenStore());
@@ -178,31 +188,49 @@ export default {
         }
       }
     }
+    async function makePayment() {
+      const address = state.input.address || {};
+      const token = state.input.token || {};
+      const initData = {
+        source: "POS",
+        tokenId: token.id,
+        addressId: address.id,
+        companyId: company.value.id,
+        amount: state.input.amount,
+      };
+      const payment = await paymentService.initiatePayment(initData);
+      const amount = payment.amount / Math.pow(10, payment.token.decimals);
 
-    function generateQR() {
-      state.window = 2;
+      state.token = token;
+      state.payment = {
+        amount,
+        label: company.value.name,
+        reference: payment.reference,
+        token: payment.token.address,
+        recipient: payment.address.address,
+        message: `Payment of ${amount} ${payment.token.symbol}`,
+      };
 
-      setTimeout(() => {
-        const address = state.input.address && state.input.address.address;
-        const token = state.input.token && state.input.token.address;
+      solanapay.waitForPayment(
+        { reference: payment.reference, recipient: address.address, splToken: token.address, amount },
+        async (signature) => {
+          await paymentService.completePayment(payment.id, { transactionId: signature });
 
-        const data = {
-          token,
-          recipient: address,
-          label: company.value.name,
-          amount: state.input.amount,
-          message: `Payment of ${state.input.amount} ${state.input.token && state.input.token.symbol}`,
-        };
+          state.completed = true;
+        }
+      );
 
-        const qr = solanapay.getQR(data);
-        qr.append(document.querySelector("#qrCode"));
-      });
+      toggleModal("pay");
+      state.window = 0;
+    }
+
+    function toggleModal(p) {
+      state.modals[p] = !state.modals[p];
     }
 
     onMounted(async () => {
       try {
         state.loading = true;
-
         await Promise.all([addressService.loadAddresses(), tokenService.loadTokens()]);
       } catch (e) {
         toast.error(e.message);
@@ -211,7 +239,7 @@ export default {
       }
     });
 
-    return { state, tokens, addresses, input, generateQR };
+    return { state, tokens, addresses, input, makePayment, toggleModal };
   },
 };
 </script>

@@ -1,22 +1,26 @@
-import { defineStore } from "pinia"
+import { defineStore } from "pinia";
 
 export const useAddressStore = defineStore("Address", {
-  state: () => ({ addresses: [] }),
+  state: () => ({ addresses: [], address: { tokens: [] } }),
 
   actions: {
     addAddress(address) {
-      this.addresses = [address, ...this.addresses]
+      this.addresses = [address, ...this.addresses];
     },
 
     updateAddress(value) {
-      const address = this.addresses.find((a) => a.id === value.id)
+      const address = this.addresses.find((a) => a.id === value.id);
       if (!!address) {
-        Object.assign(address, value)
+        Object.assign(address, value);
       }
     },
 
+    setAddress(address) {
+      this.address = { ...this.address, ...address };
+    },
+
     setAddresses(addresses) {
-      this.addresses = addresses
+      this.addresses = addresses;
     },
   },
-})
+});

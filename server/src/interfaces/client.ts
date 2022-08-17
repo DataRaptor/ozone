@@ -1,21 +1,21 @@
 export interface IAddClientPayload {
-  name: string
-  email?: string
-  phone?: string
-  taxNumber?: string
-  line1?: string
-  city?: string
-  state?: string
-  postalCode?: string
-  country?: string
+  name: string;
+  email?: string;
+  phone?: string;
+  taxNumber?: string;
+  line1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
 export interface IUpdateClientPayload extends IGetClientPayload {
-  client: IAddClientPayload
+  client: IAddClientPayload;
 }
 
 export interface IGetClientPayload {
-  id: string
+  id: string;
 }
 
 export interface IDeleteClientPayload extends IGetClientPayload {}

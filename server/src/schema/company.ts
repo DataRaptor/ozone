@@ -1,4 +1,4 @@
-import Joi from "joi"
+import Joi from "joi";
 
 export const companySchema = Joi.object({
   name: Joi.string().required().trim(),
@@ -10,4 +10,4 @@ export const companySchema = Joi.object({
   state: Joi.string().optional().default(null).trim(),
   postalCode: Joi.string().optional().default(null),
   country: Joi.string().optional().default(null).trim(),
-})
+});

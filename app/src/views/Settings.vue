@@ -4,7 +4,7 @@
   </div>
 
   <v-tabs v-model="state.tab" class="my-5">
-    <v-tab density="compact" :value="0" color="primary">Account</v-tab>
+    <v-tab :value="0" color="primary">Account</v-tab>
     <v-tab :value="1" color="primary">Company</v-tab>
     <v-tab :value="2" color="primary">Security</v-tab>
   </v-tabs>
@@ -53,7 +53,7 @@
               />
             </div>
 
-            <v-btn flat color="primary">Update</v-btn>
+            <v-btn flat color="primary" @click="updateUser">Update</v-btn>
           </v-window-item>
 
           <v-window-item :value="1">
@@ -145,9 +145,11 @@
               <v-col cols="12" md="6">
                 <div>
                   <v-label class="mb-2">Country</v-label>
-                  <v-text-field
+                  <v-select
                     v-model="state.input.company.country"
-                    placeholder="Enter Country"
+                    :items="state.countries"
+                    item-value="code"
+                    item-title="name"
                     variant="outlined"
                     density="compact"
                     color="primary"
@@ -156,7 +158,7 @@
               </v-col>
             </v-row>
             <div class="mb-3">
-              <v-btn flat color="primary">Update</v-btn>
+              <v-btn flat color="primary" @click="updateCompany">Update</v-btn>
             </div>
           </v-window-item>
 
@@ -165,17 +167,58 @@
               <p>Update your security details.</p>
             </div>
 
-            <div>
-              <v-label class="mb-2">Old Password</v-label>
-              <v-text-field variant="outlined" placeholder="Enter Old Password" density="compact" color="primary" />
-            </div>
+            <template v-if="user.hasPassword">
+              <div>
+                <v-label class="mb-2">Old Password</v-label>
+                <v-text-field
+                  v-model="state.input.security.oldPassword"
+                  type="password"
+                  variant="outlined"
+                  placeholder="Enter Old Password"
+                  density="compact"
+                  color="primary"
+                />
+              </div>
 
-            <div>
-              <v-label class="mb-2">New Password</v-label>
-              <v-text-field variant="outlined" placeholder="Enter New Password" density="compact" color="primary" />
-            </div>
+              <div>
+                <v-label class="mb-2">New Password</v-label>
+                <v-text-field
+                  v-model="state.input.security.newPassword"
+                  type="password"
+                  variant="outlined"
+                  placeholder="Enter New Password"
+                  density="compact"
+                  color="primary"
+                />
+              </div>
+            </template>
+            <template v-else>
+              <div>
+                <v-label class="mb-2">New Password</v-label>
+                <v-text-field
+                  v-model="state.input.security.newPassword"
+                  type="password"
+                  variant="outlined"
+                  placeholder="Enter Old Password"
+                  density="compact"
+                  color="primary"
+                />
+              </div>
 
-            <v-btn flat color="primary">Update</v-btn>
+              <div>
+                <v-label class="mb-2">Repeat Password</v-label>
+                <v-text-field
+                  v-model="state.input.security.repeatPassword"
+                  type="password"
+                  variant="outlined"
+                  placeholder="Repeat New Password"
+                  density="compact"
+                  color="primary"
+                />
+              </div>
+            </template>
+
+            <v-btn flat color="primary" @click="updateUserPassword">Update</v-btn>
           </v-window-item>
         </v-window>
       </v-col>
@@ -187,14 +230,15 @@
 import { storeToRefs } from "pinia";
 import { onMounted, reactive, watch } from "vue";
 import Loader from "../components/Loader.vue";
-import { authService } from "../services";
+import { countries } from "../config/countries";
+import { userService, companyService } from "../services";
 import { useAuthStore, useCompanyStore } from "../stores";
 import { toast } from "../utils";
 
 export default {
   components: { Loader },
   setup() {
-    const state = reactive({ loading: false, tab: null, input: { user: {}, company: {}, security: {} } });
+    const state = reactive({ loading: false, tab: null, countries, input: { user: {}, company: {}, security: {} } });
     const { user } = storeToRefs(useAuthStore());
     const { company } = storeToRefs(useCompanyStore());
 
@@ -217,7 +261,37 @@ export default {
       }
     );
 
-    return { state };
+    async function updateCompany() {
+      try {
+        await companyService.updateCompany(company.value.id, state.input.company);
+      } catch (e) {
+        toast.error(e.message);
+      }
+    }
+
+    async function updateUser() {
+      try {
+        await userService.updateUser(state.input.user);
+      } catch (e) {
+        toast.error(e.message);
+      }
+    }
+
+    async function updateUserPassword() {
+      try {
+        await userService.updateUserPassword(state.input.security);
+      } catch (e) {
+        toast.error(e.message);
+      }
+    }
+
+    return { user, state, updateCompany, updateUser, updateUserPassword };
   },
 };
 </script>
+
+<style scoped>
+.v-tab {
+  justify-content: start;
+}
+</style>

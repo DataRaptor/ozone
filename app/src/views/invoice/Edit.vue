@@ -329,8 +329,10 @@
 
       <div class="d-flex mb-10 ms-3">
         <v-spacer />
-        <v-btn flat color="primary" class="me-3" @click="saveInvoice('DRAFT')">Save as draft</v-btn>
-        <v-btn flat color="primary" @click="saveInvoice()">Create and send</v-btn>
+        <v-btn v-if="invoice.status === 'DRAFT'" flat color="primary" class="me-3" @click="saveInvoice('DRAFT')">
+          Save as draft
+        </v-btn>
+        <v-btn flat color="primary" @click="saveInvoice('PENDING')">Update and send</v-btn>
       </div>
     </v-row>
   </v-card>
@@ -346,26 +348,26 @@
 </template>
 
 <script>
-import { reactive, onMounted } from "vue"
-import EditClient from "../../components/modals/client/Edit.vue"
-import NewClient from "../../components/modals/client/New.vue"
-import NewAddress from "../../components/modals/address/New.vue"
-import EditCompany from "../../components/modals/company/Edit.vue"
-import { useAddressStore, useClientStore, useCompanyStore, useInvoiceStore, useTokenStore } from "../../stores"
-import { storeToRefs } from "pinia"
-import { addressService, clientService, invoiceService, tokenService } from "../../services"
-import { tally, toast, utils } from "../../utils"
-import { useRoute } from "vue-router"
-import Loader from "../../components/Loader.vue"
+import { reactive, onMounted } from "vue";
+import EditClient from "../../components/modals/client/Edit.vue";
+import NewClient from "../../components/modals/client/New.vue";
+import NewAddress from "../../components/modals/address/New.vue";
+import EditCompany from "../../components/modals/company/Edit.vue";
+import { useAddressStore, useClientStore, useCompanyStore, useInvoiceStore, useTokenStore } from "../../stores";
+import { storeToRefs } from "pinia";
+import { addressService, clientService, invoiceService, tokenService } from "../../services";
+import { tally, toast } from "../../utils";
+import { useRoute, useRouter } from "vue-router";
+import Loader from "../../components/Loader.vue";
 
 export default {
   components: { EditClient, NewClient, NewAddress, EditCompany, Loader },
   setup() {
-    const { clients } = storeToRefs(useClientStore())
-    const { company } = storeToRefs(useCompanyStore())
-    const { addresses } = storeToRefs(useAddressStore())
-    const { tokens } = storeToRefs(useTokenStore())
-    const { invoice } = storeToRefs(useInvoiceStore())
+    const { clients } = storeToRefs(useClientStore());
+    const { company } = storeToRefs(useCompanyStore());
+    const { addresses } = storeToRefs(useAddressStore());
+    const { tokens } = storeToRefs(useTokenStore());
+    const { invoice } = storeToRefs(useInvoiceStore());
 
     const itemsBlueprint = {
       tax: "",
@@ -375,9 +377,9 @@ export default {
       quantity: "",
       mode: "create",
       description: "",
-    }
+    };
 
-    const route = useRoute()
+    const route = useRoute();
     const state = reactive({
       loading: false,
       modals: {
@@ -396,44 +398,48 @@ export default {
       netAmount: 0,
       amountWithoutTax: 0,
       totalTaxAmount: 0,
-    })
+    });
+
+    const router = useRouter();
 
     function toggleModal(p) {
-      state.modals[p] = !state.modals[p]
+      state.modals[p] = !state.modals[p];
     }
 
     function addInvoiceItem() {
-      invoice.value.items.push({ ...itemsBlueprint })
+      invoice.value.items.push({ ...itemsBlueprint });
     }
 
     function updateItem(item) {
-      const itemAmount = tally.getItemAmounts(item)
+      const itemAmount = tally.getItemAmounts(item);
 
-      item.taxAmount = itemAmount.taxAmount
-      item.amountWithoutTax = itemAmount.amountWithoutTax
-      item.netAmount = itemAmount.netAmount
+      item.taxAmount = itemAmount.taxAmount;
+      item.amountWithoutTax = itemAmount.amountWithoutTax;
+      item.netAmount = itemAmount.netAmount;
 
-      const stateAmount = tally.sumTotalAmounts(invoice.value.items)
+      const stateAmount = tally.sumTotalAmounts(invoice.value.items);
 
-      invoice.value.netAmount = stateAmount.netAmount
-      invoice.value.amountWithoutTax = stateAmount.amountWithoutTax
-      invoice.value.totalTaxAmount = stateAmount.totalTaxAmount
+      invoice.value.netAmount = stateAmount.netAmount;
+      invoice.value.amountWithoutTax = stateAmount.amountWithoutTax;
+      invoice.value.totalTaxAmount = stateAmount.totalTaxAmount;
     }
 
     function deleteInvoiceItem(item) {
-      const netAmount = isNaN(Number(item.netAmount)) ? 0 : Number(item.netAmount)
-      const amountWithoutTax = isNaN(Number(item.amountWithoutTax)) ? 0 : Number(item.amountWithoutTax)
-      const taxAmount = isNaN(Number(item.taxAmount)) ? 0 : Number(item.taxAmount)
+      const netAmount = isNaN(Number(item.netAmount)) ? 0 : Number(item.netAmount);
+      const amountWithoutTax = isNaN(Number(item.amountWithoutTax)) ? 0 : Number(item.amountWithoutTax);
+      const taxAmount = isNaN(Number(item.taxAmount)) ? 0 : Number(item.taxAmount);
 
-      invoice.value.netAmount = isNaN(Number(invoice.value.netAmount)) ? 0 : Number(invoice.value.netAmount) - netAmount
+      invoice.value.netAmount = isNaN(Number(invoice.value.netAmount))
+        ? 0
+        : Number(invoice.value.netAmount) - netAmount;
       invoice.value.amountWithoutTax = isNaN(Number(invoice.value.amountWithoutTax))
         ? 0
-        : Number(invoice.value.amountWithoutTax) - amountWithoutTax
+        : Number(invoice.value.amountWithoutTax) - amountWithoutTax;
       invoice.value.totalTaxAmount = isNaN(Number(invoice.value.totalTaxAmount))
         ? 0
-        : Number(invoice.value.totalTaxAmount) - taxAmount
+        : Number(invoice.value.totalTaxAmount) - taxAmount;
 
-      item.mode = "delete"
+      item.mode = "delete";
     }
 
     async function saveInvoice(status) {
@@ -449,7 +455,7 @@ export default {
           paymentTokenId: invoice.value.paymentToken?.id,
           paymentAddressId: invoice.value.paymentAddress?.id,
           issuedAt: new Date(invoice.value.issuedAt).getTime(),
-        }
+        };
 
         invoice.value.items.forEach((item) => {
           payload.items.push({
@@ -462,31 +468,32 @@ export default {
             companyId: state.company.id,
             description: item.description,
             mode: !!item.id && !item.mode ? "update" : item.mode,
-          })
-        })
+          });
+        });
 
-        await invoiceService.updateInvoice(invoice.value.id, payload)
+        await invoiceService.updateInvoice(invoice.value.id, payload);
+        router.push(`/invoices/${invoice.value.id}`);
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
     }
 
     onMounted(async () => {
       try {
-        state.loading = true
+        state.loading = true;
 
         await Promise.all([
           invoiceService.loadInvoice(route.params.id),
           clientService.loadClients(),
           addressService.loadAddresses(),
           tokenService.loadTokens(),
-        ])
+        ]);
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       } finally {
-        state.loading = false
+        state.loading = false;
       }
-    })
+    });
 
     return {
       state,
@@ -496,9 +503,9 @@ export default {
       toggleModal,
       updateItem,
       deleteInvoiceItem,
-    }
+    };
   },
-}
+};
 </script>
 
 <style scoped>
