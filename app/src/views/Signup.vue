@@ -68,46 +68,46 @@
 </template>
 
 <script>
-import { reactive } from "vue"
-import { useRouter } from "vue-router"
-import ConnectModal from "../components/modals/Connect.vue"
-import { authService } from "../services"
-import { toast } from "../utils"
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import ConnectModal from "../components/modals/Connect.vue";
+import { authService } from "../services";
+import { toast } from "../utils";
 
 export default {
   components: { ConnectModal },
   setup(_, ctx) {
-    const router = useRouter()
+    const router = useRouter();
     const state = reactive({
       modals: { connect: null },
       input: { name: "", email: "", password: "" },
-    })
+    });
 
     function toggleModal(modal) {
-      state.modals[modal] = !state.modals[modal]
+      state.modals[modal] = !state.modals[modal];
     }
 
     async function signUp(data) {
       try {
-        let payload = {}
+        let payload = {};
 
         if (!data.address && !data.signature) {
-          payload.name = state.input.name
-          payload.email = state.input.email
-          payload.password = state.input.password
-          payload.mode = "email"
+          payload.name = state.input.name;
+          payload.email = state.input.email;
+          payload.password = state.input.password;
+          payload.mode = "email";
         } else {
-          payload = { ...data, mode: "wallet" }
+          payload = { ...data, mode: "wallet" };
         }
 
-        await authService.signUp(payload)
-        window.location.href = "/"
+        await authService.signUp(payload);
+        window.location.href = "/settings";
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
     }
 
-    return { state, toggleModal, signUp }
+    return { state, toggleModal, signUp };
   },
-}
+};
 </script>
