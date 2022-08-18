@@ -40,7 +40,6 @@
             icon="mdi-pencil-outline"
             @click="toggleModal('edit', paymentLink)"
           />
-          <v-btn density="compact" class="mr-3" variant="icon" size="small" color="error" icon="mdi-delete-outline" />
         </td>
       </tr>
     </tbody>
