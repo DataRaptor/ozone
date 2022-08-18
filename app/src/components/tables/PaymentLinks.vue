@@ -31,32 +31,58 @@
             icon="mdi-content-copy"
             @click="copyLink(paymentLink.id)"
           />
-          <v-btn density="compact" class="mr-3" variant="icon" size="small" color="primary" icon="mdi-pencil-outline" />
+          <v-btn
+            density="compact"
+            class="mr-3"
+            variant="icon"
+            size="small"
+            color="primary"
+            icon="mdi-pencil-outline"
+            @click="toggleModal('edit', paymentLink)"
+          />
           <v-btn density="compact" class="mr-3" variant="icon" size="small" color="error" icon="mdi-delete-outline" />
         </td>
       </tr>
     </tbody>
   </v-table>
+
+  <EditPaymentLink
+    :show="state.modals.edit"
+    :addresses="addresses"
+    :tokens="tokens"
+    :paymentLink="state.current"
+    @toggle-modal="toggleModal('edit', {})"
+  />
 </template>
 
 <script>
+import { reactive } from "vue";
 import { toast, utils } from "../../utils";
+import EditPaymentLink from "../modals/paymentLink/Edit.vue";
 
 export default {
-  props: ["paymentLinks"],
+  props: ["paymentLinks", "addresses", "tokens"],
   setup() {
+    const state = reactive({ modals: { edit: null }, current: {} });
+
     async function copyLink(id) {
       try {
         const link = `${window.location.origin}/pay/${id}`;
         await utils.copyToClipBoard(link);
-
         toast.success("Link has been copied");
       } catch (e) {
         console.log(e);
       }
     }
 
-    return { utils, copyLink };
+    function toggleModal(p, v) {
+      state.current = v || {};
+
+      state.modals[p] = !state.modals[p];
+    }
+
+    return { state, utils, copyLink, toggleModal };
   },
+  components: { EditPaymentLink },
 };
 </script>

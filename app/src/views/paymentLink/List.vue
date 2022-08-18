@@ -1,37 +1,40 @@
 <template>
   <v-row>
     <v-col cols="12" md="10" class="mx-auto">
-      <div class="d-flex mb-5">
-        <h5 class="h5">Payment links</h5>
-        <v-spacer />
-        <v-btn flat variant="text" density="compact" color="primary" @click.stop="toggleModal('new')">
-          New payment link
-        </v-btn>
-      </div>
-
-      <v-text-field
-        variant="outlined"
-        color="primary"
-        density="compact"
-        prepend-inner-icon="mdi-magnify"
-        placeholder="Search payment links..."
-      />
-
       <Loader v-if="state.loading" />
+
       <template v-else>
-        <PaymentLinks v-if="paymentLinks.length > 0" :paymentLinks="paymentLinks" />
-        <Empty v-else message="No payment links yet" />
+        <div class="d-flex mb-5">
+          <h5 class="h5">Payment links</h5>
+          <v-spacer />
+          <v-btn flat variant="text" density="compact" color="primary" @click.stop="toggleModal('new')">
+            New payment link
+          </v-btn>
+        </div>
+
+        <v-text-field
+          variant="outlined"
+          color="primary"
+          density="compact"
+          prepend-inner-icon="mdi-magnify"
+          placeholder="Search payment links..."
+        />
+
+        <Loader v-if="state.loading" />
+        <template v-else>
+          <PaymentLinks
+            v-if="paymentLinks.length > 0"
+            :paymentLinks="paymentLinks"
+            :tokens="tokens"
+            :addresses="addresses"
+          />
+          <Empty v-else message="No payment links yet" />
+        </template>
       </template>
     </v-col>
   </v-row>
 
-  <NewPaymentLink
-    :show="state.modals.new"
-    :tokens="tokens"
-    :addresses="addresses"
-    :clients="clients"
-    @toggle-modal="toggleModal('new')"
-  />
+  <NewPaymentLink :show="state.modals.new" :tokens="tokens" :addresses="addresses" @toggle-modal="toggleModal('new')" />
 </template>
 
 <script>
@@ -53,7 +56,7 @@ export default {
     const { addresses } = storeToRefs(useAddressStore());
     const { tokens } = storeToRefs(useTokenStore());
 
-    const state = reactive({ loading: false, modals: { new: null } });
+    const state = reactive({ loading: false, modals: { new: null }, current: {} });
 
     function toggleModal(p) {
       state.modals[p] = !state.modals[p];

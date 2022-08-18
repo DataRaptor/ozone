@@ -141,8 +141,9 @@ export default {
 
     async function addCompany() {
       try {
-        await companyService.addCompany(state.input);
+        const res = await companyService.addCompany(state.input);
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }

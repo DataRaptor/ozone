@@ -1,5 +1,6 @@
 <template>
-  <v-window v-model="state.window">
+  <Loader v-if="state.loading" />
+  <v-window v-else v-model="state.window">
     <v-window-item :value="0">
       <v-row>
         <v-col cols="12" md="6" class="mx-auto">
@@ -155,9 +156,10 @@ import { solanapay, toast } from "../../utils";
 import { addressService, tokenService, paymentService } from "../../services";
 import { useAddressStore, useCompanyStore, useTokenStore } from "../../stores";
 import PayModal from "../../components/modals/Pay.vue";
+import Loader from "../../components/Loader.vue";
 
 export default {
-  components: { PayModal },
+  components: { PayModal, Loader },
   setup() {
     const state = reactive({
       window: null,

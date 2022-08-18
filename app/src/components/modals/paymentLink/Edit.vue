@@ -3,121 +3,94 @@
     <v-card>
       <v-card-text class="py-5">
         <div class="d-flex">
-          <h5 class="h5 mb-6">Update your company</h5>
+          <h5 class="h5 mb-6">Update payment link</h5>
           <v-spacer />
           <v-btn flat density="compact" icon="mdi-close" @click="$emit('toggle-modal')" />
         </div>
 
-        <v-form @submit.prevent="updateCompany">
-          <v-row>
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Name</v-label>
-              <v-text-field
-                v-model="state.input.name"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Name"
-              />
-            </v-col>
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Email</v-label>
-              <v-text-field
-                v-model="state.input.email"
-                type="email"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Email"
-              />
-            </v-col>
+        <v-form @submit.prevent="updatePaymentLink">
+          <div>
+            <v-label class="mb-3">Title</v-label>
+            <v-text-field
+              v-model="state.input.title"
+              type="text"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              placeholder="Title"
+            />
+          </div>
 
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Phone Number</v-label>
-              <v-text-field
-                v-model="state.input.phone"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Phone Number"
-              />
-            </v-col>
+          <div>
+            <v-label class="mb-3">Amount (Optional)</v-label>
+            <v-text-field
+              v-model.number="state.input.amount"
+              type="number"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              placeholder="Amount"
+            />
+          </div>
 
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Tax Number</v-label>
-              <v-text-field
-                v-model="state.input.taxNumber"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Tax Number"
-              />
-            </v-col>
+          <div>
+            <v-label class="mb-3">Description</v-label>
+            <v-textarea
+              v-model="state.input.description"
+              type="email"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              rows="2"
+              placeholder="Description"
+            />
+          </div>
 
-            <v-col class="py-0" cols="12">
-              <v-label class="mb-3">Address</v-label>
-              <v-textarea
-                v-model="state.input.line1"
-                rows="2"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Address"
-              />
-            </v-col>
+          <div>
+            <v-label class="mb-3">Select Token</v-label>
+            <v-select
+              v-model="state.input.token"
+              :items="tokens"
+              item-title="name"
+              item-value="id"
+              type="select"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              placeholder="PaymentLink"
+              return-object
+            />
+          </div>
 
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">City</v-label>
-              <v-text-field
-                v-model="state.input.city"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="City"
-              />
-            </v-col>
+          <div>
+            <v-label class="mb-3">Select Address</v-label>
+            <v-select
+              v-model="state.input.address"
+              :items="addresses"
+              item-title="label"
+              item-value="id"
+              type="select"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              placeholder="PaymentLink"
+              return-object
+            />
+          </div>
 
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">State</v-label>
-              <v-text-field
-                v-model="state.input.state"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="State"
-              />
-            </v-col>
+          <div>
+            <v-label class="mb-3">Redirect URL (Optional)</v-label>
+            <v-text-field
+              v-model="state.input.redirectUrl"
+              type="text"
+              variant="outlined"
+              density="compact"
+              color="primary"
+              placeholder="Redirect URL"
+            />
+          </div>
 
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Postal/Zip Code</v-label>
-              <v-text-field
-                v-model="state.input.postalCode"
-                type="text"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                placeholder="Postal/Zip Code"
-              />
-            </v-col>
-
-            <v-col class="py-0" cols="12" md="6">
-              <v-label class="mb-3">Country</v-label>
-              <v-select
-                v-model="state.input.country"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                label="Select country"
-              />
-            </v-col>
-          </v-row>
-
-          <v-btn block flat type="submit" class="mt-5" color="primary">Update Company</v-btn>
+          <v-btn block flat type="submit" class="mt-5" color="primary">Update payment link</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -125,33 +98,32 @@
 </template>
 
 <script>
-import { useCompanyStore } from "../../../stores";
-import { reactive, watch } from "vue";
 import { toast } from "../../../utils";
-import { companyService } from "../../../services";
+import { paymentLinkService } from "../../../services";
+import { reactive, watch } from "vue";
 
 export default {
-  props: ["show"],
+  props: ["show", "paymentLink", "addresses", "tokens"],
   emits: ["toggle-modal"],
-  setup(_, ctx) {
-    const companyStore = useCompanyStore();
-    const state = reactive({ input: { ...companyStore.company } });
+  setup(props, ctx) {
+    const state = reactive({ input: { ...props.paymentLink } });
 
-    async function updateCompany() {
+    async function updatePaymentLink() {
       try {
-        await companyService.updateCompany(companyStore.company.id, state.input);
+        const res = await paymentLinkService.updatePaymentLink(props.paymentLink.id, state.input);
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }
     }
 
     watch(
-      () => companyStore.company,
+      () => props.paymentLink,
       (n, o) => (state.input = { ...o, ...n })
     );
 
-    return { state, updateCompany };
+    return { state, updatePaymentLink };
   },
 };
 </script>

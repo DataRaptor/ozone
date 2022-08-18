@@ -7,6 +7,7 @@ export class AddressService {
 
     const address = await request.api.post("/addresses", data);
     addressStore.addAddress(address.data);
+    return address;
   }
 
   async updateAddress(id, data) {
@@ -14,6 +15,7 @@ export class AddressService {
 
     const address = await request.api.put(`/addresses/${id}`, data);
     addressStore.setAddress(address.data);
+    return address;
   }
 
   async loadAddresses() {
@@ -21,12 +23,14 @@ export class AddressService {
 
     const addresses = await request.api.get("/addresses");
     addressStore.setAddresses(addresses.data);
+    return addresses;
   }
 
   async loadAddress(id) {
     const addressStore = useAddressStore();
-    const address = await request.api.get(`/addresses/${id}`);
 
+    const address = await request.api.get(`/addresses/${id}`);
     addressStore.setAddress(address.data);
+    return address;
   }
 }

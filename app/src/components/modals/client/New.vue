@@ -141,10 +141,11 @@ export default {
 
     async function addClient() {
       try {
-        await clientService.addClient(state.input);
+        const res = await clientService.addClient(state.input);
         state.input = {};
 
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }

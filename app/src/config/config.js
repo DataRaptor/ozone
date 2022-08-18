@@ -1,6 +1,7 @@
 const env = import.meta.env;
 
 export const config = {
+  appName: env.VITE_APP_NAME,
   api: {
     baseUrl: env.VITE_API_BASE_URL,
   },

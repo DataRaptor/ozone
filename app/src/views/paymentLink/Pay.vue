@@ -1,7 +1,8 @@
 <template>
   <v-row align="center" justify="center" style="height: 99vh">
     <v-col cols="12" md="6" class="mx-auto">
-      <v-card>
+      <Loader v-if="state.loading" />
+      <v-card v-else>
         <v-card-text class="py-10">
           <div class="my-10 text-center">
             <h5 class="h5 mb-3">{{ paymentLink.title }}</h5>
@@ -58,9 +59,10 @@ import PayModal from "../../components/modals/Pay.vue";
 import { paymentLinkService, paymentService } from "../../services";
 import { usePaymentLinkStore } from "../../stores";
 import { solanapay, utils } from "../../utils";
+import Loader from "../../components/Loader.vue";
 
 export default {
-  components: { PayModal },
+  components: { PayModal, Loader },
   setup() {
     const { paymentLink } = storeToRefs(usePaymentLinkStore());
     const route = useRoute();
@@ -72,6 +74,9 @@ export default {
       const company = paymentLink.value.company;
       const client = paymentLink.value.client || {};
 
+      const amount =
+        paymentLink.value.amount == "0" ? state.input.amount : paymentLink.value.amount / Math.pow(10, token.decimals);
+
       const initData = {
         source: "LINK",
         paymentLinkId: paymentLink.value.id,
@@ -79,11 +84,10 @@ export default {
         clientId: client.id,
         companyId: company.id,
         addressId: address.id,
-        amount: paymentLink.value.amount / Math.pow(10, token.decimals),
+        amount,
       };
 
       const payment = await paymentService.initiatePayment(initData);
-      const amount = payment.amount / Math.pow(10, token.decimals);
 
       state.token = token;
       state.payment = {
@@ -101,6 +105,10 @@ export default {
           await paymentService.completePayment(payment.id, { transactionId: signature });
 
           state.completed = true;
+
+          if (paymentLink.value.redirectUrl) {
+            window.location.href = paymentLink.value.redirectUrl;
+          }
         }
       );
 
@@ -112,8 +120,9 @@ export default {
     }
 
     onMounted(async () => {
+      state.loading = true;
       await paymentLinkService.loadPaymentLink(route.params.id);
-      console.log(paymentLink);
+      state.loading = false;
     });
 
     return { state, utils, paymentLink, makePayment, toggleModal };

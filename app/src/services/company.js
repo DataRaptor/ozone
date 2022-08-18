@@ -7,19 +7,21 @@ export class CompanyService {
 
     const companies = await request.api.get("/companies");
     companyStore.setCompanies(companies.data);
+    return companies;
   }
 
   async switchCompany(id) {
     const companyStore = useCompanyStore();
     companyStore.setCompany(id, true);
+    return companyStore;
   }
 
   async updateCompany(id, data) {
     const companyStore = useCompanyStore();
 
     const company = await request.api.put(`/companies/${id}`, data);
-
     companyStore.updateCompany(company.data);
+    return company;
   }
 
   async addCompany(data) {
@@ -27,6 +29,7 @@ export class CompanyService {
 
     const company = await request.api.post(`/companies`, data);
     companyStore.updateCompany(company.data);
+    return company;
   }
 
   async loadCompany(id) {
@@ -34,5 +37,6 @@ export class CompanyService {
 
     const company = await request.api.get(`/companies/${id}`);
     companyStore.setCompany(company.data);
+    return company;
   }
 }

@@ -7,6 +7,7 @@ export class ClientService {
 
     const client = await request.api.post("/clients", data);
     clientStore.addClient(client.data);
+    return client;
   }
 
   async loadClients() {
@@ -14,14 +15,15 @@ export class ClientService {
 
     const clients = await request.api.get("/clients");
     clientStore.setClients(clients.data);
+    return clients;
   }
 
   async updateClient(id, data) {
     const clientStore = useClientStore();
 
-    console.log(data);
-    const clients = await request.api.put(`/clients/${id}`, data);
+    const client = await request.api.put(`/clients/${id}`, data);
     clientStore.updateClient(clients.data);
+    return client;
   }
 
   async loadClient(id) {
@@ -29,5 +31,6 @@ export class ClientService {
 
     const client = await request.api.get(`/clients/${id}`);
     clientStore.setClient(client.data);
+    return client;
   }
 }

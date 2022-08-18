@@ -42,28 +42,29 @@
 </template>
 
 <script>
-import { reactive } from "vue"
-import { addressService } from "../../../services"
-import { toast } from "../../../utils"
+import { reactive } from "vue";
+import { addressService } from "../../../services";
+import { toast } from "../../../utils";
 
 export default {
   props: ["show"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
-    const state = reactive({ input: {} })
+    const state = reactive({ input: {} });
 
     async function addAddress() {
       try {
-        await addressService.addAddress(state.input)
-        state.input = {}
+        const res = await addressService.addAddress(state.input);
+        state.input = {};
 
-        ctx.emit("toggle-modal")
+        ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
-        toast.error(e.message)
+        toast.error(e.message);
       }
     }
 
-    return { state, addAddress }
+    return { state, addAddress };
   },
-}
+};
 </script>

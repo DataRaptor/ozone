@@ -22,6 +22,24 @@ export class PaymentLinkController {
     return response.success(reply, { message: "Payment link created successfuly", data });
   }
 
+  public async updatePaymentLink(request: FastifyRequest, reply: FastifyReply) {
+    const { params, body, user, company }: { [key: string]: any } = request;
+    const payload = {
+      id: params.id,
+      data: {
+        title: body.title,
+        amount: body.amount,
+        tokenId: body.tokenId,
+        addressId: body.addressId,
+        description: body.description,
+        redirectUrl: body.redirectUrl,
+      },
+    };
+
+    const data = await this.paymentService.updatePaymentLink(payload, { user, company });
+    return response.success(reply, { message: "Payment link updated successfuly", data });
+  }
+
   public async getPaymentLink(request: FastifyRequest, reply: FastifyReply) {
     const { query, params }: { [key: string]: any } = request;
     const payload = {

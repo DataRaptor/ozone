@@ -23,7 +23,7 @@ export default {
   components: { AppBar },
 
   setup() {
-    const exludes = ["signup", "signin", "paymentLinkPay"];
+    const exludes = ["home", "signup", "signin", "paymentLinkPay"];
     const { token } = storeToRefs(useAuthStore());
 
     onMounted(async () => {

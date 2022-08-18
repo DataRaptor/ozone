@@ -141,8 +141,9 @@ export default {
 
     async function updateClient() {
       try {
-        await clientService.updateClient(props.client.id, state.input);
+        const res = await clientService.updateClient(props.client.id, state.input);
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }

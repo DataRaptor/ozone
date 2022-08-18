@@ -188,7 +188,7 @@ export default {
             path: "/payments/links",
           },
           {
-            title: "Payments History",
+            title: "Payments history",
             path: "/payments/history",
           },
         ],

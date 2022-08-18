@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import Home from "./views/Home.vue";
 import Signup from "./views/Signup.vue";
 import Signin from "./views/Signin.vue";
 import ClientList from "./views/client/List.vue";
@@ -19,6 +20,7 @@ import Settings from "./views/Settings.vue";
 import { useAuthStore } from "./stores";
 
 const routes = [
+  { path: "/", name: "home", component: Home, meta: {} },
   { path: "/signin", name: "signin", component: Signin, meta: { guest: true } },
   { path: "/signup", name: "signup", component: Signup, meta: { guest: true } },
   { path: "/settings", name: "settings", component: Settings, meta: { auth: true } },

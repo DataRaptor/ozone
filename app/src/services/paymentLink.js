@@ -7,13 +7,24 @@ export class PaymentLinkService {
 
     const paymentLinks = await request.api.get("/paymentLinks");
     paymentLinkStore.setPaymentLinks(paymentLinks.data);
+    return paymentLinks;
   }
 
   async updatePaymentLink(id, data) {
     const paymentLinkStore = usePaymentLinkStore();
 
-    const paymentLink = await request.api.put(`/paymentLinks/${id}`, data);
+    const payload = {
+      title: data.title,
+      amount: data.amount,
+      description: data.description,
+      redirectUrl: data.redirectUrl,
+      tokenId: data.token ? data.token.id : undefined,
+      addressId: data.address ? data.address.id : undefined,
+    };
+
+    const paymentLink = await request.api.put(`/paymentLinks/${id}`, payload);
     paymentLinkStore.updatePaymentLink(paymentLink.data);
+    return paymentLink;
   }
 
   async newPaymentLink(data) {
@@ -28,9 +39,9 @@ export class PaymentLinkService {
       addressId: data.address ? data.address.id : undefined,
     };
 
-    console.log(payload);
     const paymentLink = await request.api.post(`/paymentLinks`, payload);
     paymentLinkStore.updatePaymentLink(paymentLink.data);
+    return paymentLink;
   }
 
   async loadPaymentLink(id) {
@@ -38,5 +49,6 @@ export class PaymentLinkService {
 
     const paymentLink = await request.api.get(`/paymentLinks/${id}`);
     paymentLinkStore.setPaymentLink(paymentLink.data);
+    return paymentLink;
   }
 }

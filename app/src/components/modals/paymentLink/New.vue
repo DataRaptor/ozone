@@ -25,7 +25,7 @@
             <v-label class="mb-3">Amount (Optional)</v-label>
             <v-text-field
               v-model.number="state.input.amount"
-              type="text"
+              type="number"
               variant="outlined"
               density="compact"
               color="primary"
@@ -79,7 +79,7 @@
           </div>
 
           <div>
-            <v-label class="mb-3">Redirect URL</v-label>
+            <v-label class="mb-3">Redirect URL (Optional)</v-label>
             <v-text-field
               v-model="state.input.redirectUrl"
               type="text"
@@ -103,15 +103,16 @@ import { paymentLinkService } from "../../../services";
 import { reactive } from "vue";
 
 export default {
-  props: ["show", "clients", "addresses", "tokens"],
+  props: ["show", "addresses", "tokens"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
     const state = reactive({ input: {} });
 
     async function newPaymentLink() {
       try {
-        await paymentLinkService.newPaymentLink(state.input);
+        const res = await paymentLinkService.newPaymentLink(state.input);
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }

@@ -13,4 +13,6 @@ export async function paymentLink(app: AppInstance) {
   app.get("/:id", { onRequest: onRequestOptional }, controller.getPaymentLink.bind(controller));
   app.get("/:id/share", { onRequest: onRequestOptional }, controller.getPaymentLinkShareToken.bind(controller));
   // app.put("/:id/complete", controller.completePaymentLink.bind(controller));
+
+  app.put("/:id", { onRequest }, controller.updatePaymentLink.bind(controller));
 }

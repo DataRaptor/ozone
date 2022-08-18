@@ -8,12 +8,10 @@ export interface ICreatePaymentLinkPayload {
   redirectUrl?: string;
 }
 
-// export interface ICompletePaymentPayload {
-//   id: string;
-//   data: {
-//     transactionId: string;
-//   };
-// }
+export interface IUpdatePaymentLinkPayload {
+  id: string;
+  data: ICreatePaymentLinkPayload;
+}
 
 export interface IGetPaymentLinkPayload {
   id: string;

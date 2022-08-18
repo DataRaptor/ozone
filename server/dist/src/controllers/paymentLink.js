@@ -41,6 +41,24 @@ let PaymentLinkController = class PaymentLinkController {
             return utils_1.response.success(reply, { message: "Payment link created successfuly", data });
         });
     }
+    updatePaymentLink(request, reply) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { params, body, user, company } = request;
+            const payload = {
+                id: params.id,
+                data: {
+                    title: body.title,
+                    amount: body.amount,
+                    tokenId: body.tokenId,
+                    addressId: body.addressId,
+                    description: body.description,
+                    redirectUrl: body.redirectUrl,
+                },
+            };
+            const data = yield this.paymentService.updatePaymentLink(payload, { user, company });
+            return utils_1.response.success(reply, { message: "Payment link updated successfuly", data });
+        });
+    }
     getPaymentLink(request, reply) {
         return __awaiter(this, void 0, void 0, function* () {
             const { query, params } = request;

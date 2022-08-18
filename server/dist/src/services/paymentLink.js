@@ -44,7 +44,7 @@ let PaymentLinkService = class PaymentLinkService {
                     token: { connect: { id: token.id } },
                     address: { connect: { id: address.id } },
                     company: { connect: { id: company.id } },
-                    amount: data.amount * Math.pow(10, token.decimals),
+                    amount: data.amount ? data.amount * Math.pow(10, token.decimals) : 0,
                 },
                 include: { token: true, company: true, address: true },
             });
@@ -90,6 +90,40 @@ let PaymentLinkService = class PaymentLinkService {
             return {
                 token: Buffer.from(app_1.app.jwt.sign({ paymentId: paymentLink.id })).toString("hex"),
             };
+        });
+    }
+    updatePaymentLink(payload, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { company } = context;
+            const cleanPayload = utils_1.utils.clean(payload);
+            const data = yield schema_1.createPaymentLinkSchema.validateAsync(cleanPayload.data);
+            const paymentLink = yield prisma_1.prisma.paymentLink.findFirst({
+                where: { id: cleanPayload.id, company: { id: company.id } },
+            });
+            if (!paymentLink) {
+                throw new errors_1.ApiError("Payment link not found", 404);
+            }
+            const token = yield prisma_1.prisma.token.findUnique({ where: { id: data.tokenId } });
+            if (!token) {
+                throw new errors_1.ApiError("Token is not supported", 404);
+            }
+            const address = yield prisma_1.prisma.address.findUnique({ where: { id: data.addressId } });
+            if (!address) {
+                throw new errors_1.ApiError("Address not found", 404);
+            }
+            const payment = yield prisma_1.prisma.paymentLink.update({
+                where: { id: paymentLink.id },
+                data: {
+                    title: data.title,
+                    description: data.description,
+                    redirectUrl: data.redirectUrl,
+                    token: { connect: { id: token.id } },
+                    address: { connect: { id: address.id } },
+                    amount: data.amount ? data.amount * Math.pow(10, token.decimals) : 0,
+                },
+                include: { token: true, company: true, address: true },
+            });
+            return payment;
         });
     }
 };

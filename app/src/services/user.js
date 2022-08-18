@@ -9,6 +9,7 @@ export class UserService {
 
     const result = await request.api.put("/users/me", { ...payload });
     authStore.setUserData(result.data);
+    return result;
   }
 
   async updateUserPassword(data) {
@@ -20,9 +21,8 @@ export class UserService {
       payload.repeatPassword = data.repeatPassword;
     }
 
-    console.log(payload);
-
     const result = await request.api.put("/users/me/password", { ...payload });
     authStore.setUserData(result.data);
+    return result;
   }
 }

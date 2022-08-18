@@ -143,8 +143,9 @@ export default {
 
     async function updateCompany() {
       try {
-        await companyService.updateCompany(companyStore.company.id, state.input);
+        const res = await companyService.updateCompany(companyStore.company.id, state.input);
         ctx.emit("toggle-modal");
+        toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
       }

@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { app } from "../app";
 import { prisma } from "../database/prisma";
 import { ApiError } from "../errors";
-import { Context, ICreatePaymentLinkPayload, IGetPaymentLinkPayload } from "../interfaces";
+import { Context, ICreatePaymentLinkPayload, IGetPaymentLinkPayload, IUpdatePaymentLinkPayload } from "../interfaces";
 import { createPaymentLinkSchema } from "../schema";
 import { utils } from "../utils";
 
@@ -31,7 +31,7 @@ export class PaymentLinkService {
         token: { connect: { id: token.id } },
         address: { connect: { id: address.id } },
         company: { connect: { id: company!.id } },
-        amount: data.amount * Math.pow(10, token.decimals),
+        amount: data.amount ? data.amount * Math.pow(10, token.decimals) : 0,
       },
       include: { token: true, company: true, address: true },
     });
@@ -84,5 +84,43 @@ export class PaymentLinkService {
     return {
       token: Buffer.from(app.jwt.sign({ paymentId: paymentLink.id })).toString("hex"),
     };
+  }
+
+  public async updatePaymentLink(payload: IUpdatePaymentLinkPayload, context: Context) {
+    const { company } = context;
+    const cleanPayload = utils.clean(payload);
+    const data: IUpdatePaymentLinkPayload["data"] = await createPaymentLinkSchema.validateAsync(cleanPayload.data);
+
+    const paymentLink = await prisma.paymentLink.findFirst({
+      where: { id: cleanPayload.id, company: { id: company!.id } },
+    });
+    if (!paymentLink) {
+      throw new ApiError("Payment link not found", 404);
+    }
+
+    const token = await prisma.token.findUnique({ where: { id: data.tokenId } });
+    if (!token) {
+      throw new ApiError("Token is not supported", 404);
+    }
+
+    const address = await prisma.address.findUnique({ where: { id: data.addressId } });
+    if (!address) {
+      throw new ApiError("Address not found", 404);
+    }
+
+    const payment = await prisma.paymentLink.update({
+      where: { id: paymentLink.id },
+      data: {
+        title: data.title,
+        description: data.description,
+        redirectUrl: data.redirectUrl,
+        token: { connect: { id: token.id } },
+        address: { connect: { id: address.id } },
+        amount: data.amount ? data.amount * Math.pow(10, token.decimals) : 0,
+      },
+      include: { token: true, company: true, address: true },
+    });
+
+    return payment;
   }
 }
