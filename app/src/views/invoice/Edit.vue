@@ -8,7 +8,7 @@
         <v-text-field
           v-model="invoice.title"
           type="text"
-          placeholder="Invoice 001"
+          placeholder="Invoice title"
           density="compact"
           color="primary"
           variant="plain"
