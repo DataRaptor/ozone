@@ -329,8 +329,10 @@
 
       <div class="d-flex mb-10 ms-3">
         <v-spacer />
-        <v-btn flat color="primary" class="me-3" @click="saveInvoice('DRAFT')">Save as draft</v-btn>
-        <v-btn flat color="primary" @click="saveInvoice('PENDING')">Create and send</v-btn>
+        <v-btn flat color="primary" :disabled="state.submitted" class="me-3" @click="saveInvoice('DRAFT')">
+          Save as draft
+        </v-btn>
+        <v-btn flat color="primary" :disabled="state.submitted" @click="saveInvoice('PENDING')">Create and send</v-btn>
       </div>
     </v-row>
   </v-card>
@@ -377,6 +379,7 @@ export default {
     };
 
     const state = reactive({
+      submitted: false,
       loading: false,
       modals: {
         editClient: null,
@@ -441,6 +444,8 @@ export default {
 
     async function saveInvoice(status) {
       try {
+        state.submitted = true;
+
         const payload = {
           status,
           items: [],
@@ -472,6 +477,8 @@ export default {
         router.push(`/invoices/${invoice.id}`);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

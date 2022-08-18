@@ -120,7 +120,7 @@
             </v-col>
           </v-row>
 
-          <v-btn block flat type="submit" class="mt-5" color="primary">Update Client</v-btn>
+          <v-btn block flat :disabled="state.submitted" type="submit" class="mt-5" color="primary">Update Client</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -137,15 +137,19 @@ export default {
   props: ["client", "show"],
   emits: ["toggle-modal"],
   setup(props, ctx) {
-    const state = reactive({ input: { ...props.client }, countries });
+    const state = reactive({ submitted: false, input: { ...props.client }, countries });
 
     async function updateClient() {
       try {
+        state.submitted = true;
+
         const res = await clientService.updateClient(props.client.id, state.input);
         ctx.emit("toggle-modal");
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

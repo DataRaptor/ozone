@@ -56,7 +56,15 @@
           <div class="mt-5">
             <p class="">
               Already have an account?
-              <v-btn to="/signin" variant="text" density="compact" color="primary" class="py-0">Sign in</v-btn>
+              <v-btn
+                :disabled="state.submitted"
+                to="/signin"
+                variant="text"
+                density="compact"
+                color="primary"
+                class="py-0"
+                >Sign in</v-btn
+              >
             </p>
           </div>
         </v-card-text>
@@ -79,6 +87,7 @@ export default {
   setup(_, ctx) {
     const router = useRouter();
     const state = reactive({
+      submitted: false,
       modals: { connect: null },
       input: { name: "", email: "", password: "" },
     });
@@ -89,6 +98,7 @@ export default {
 
     async function signUp(data) {
       try {
+        state.submitted = true;
         let payload = {};
 
         if (!data.address && !data.signature) {
@@ -104,6 +114,8 @@ export default {
         window.location.href = "/settings";
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

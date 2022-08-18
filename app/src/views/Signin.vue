@@ -38,7 +38,7 @@
               />
             </div>
 
-            <v-btn type="submit" block flat color="primary">Sign in</v-btn>
+            <v-btn :disabled="state.submitted" type="submit" block flat color="primary">Sign in</v-btn>
           </v-form>
 
           <div class="mt-5">
@@ -66,7 +66,7 @@ export default {
   components: { ConnectModal },
   setup() {
     const router = useRouter();
-    const state = reactive({ modals: { connect: null }, input: { email: "", password: "" } });
+    const state = reactive({ submitted: false, modals: { connect: null }, input: { email: "", password: "" } });
 
     function toggleModal(modal) {
       state.modals[modal] = !state.modals[modal];
@@ -74,6 +74,7 @@ export default {
 
     async function signIn(data) {
       try {
+        state.submitted = true;
         let payload = {};
 
         if (!data.address && !data.signature) {
@@ -88,8 +89,11 @@ export default {
         window.location.href = "/settings";
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
+
     return { state, toggleModal, signIn };
   },
 };

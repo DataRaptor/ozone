@@ -119,7 +119,7 @@
                 label="Select country"
               />
             </v-col>
-            <v-btn block flat type="submit" class="my-5" color="primary">Add Client</v-btn>
+            <v-btn block flat :disabled="state.submitted" type="submit" class="my-5" color="primary">Add Client</v-btn>
           </v-row>
         </v-form>
       </v-card-text>
@@ -137,10 +137,12 @@ export default {
   props: ["show"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
-    const state = reactive({ input: {}, countries });
+    const state = reactive({ submitted: false, input: {}, countries });
 
     async function addClient() {
       try {
+        state.submitted = true;
+
         const res = await clientService.addClient(state.input);
         state.input = {};
 
@@ -148,6 +150,8 @@ export default {
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

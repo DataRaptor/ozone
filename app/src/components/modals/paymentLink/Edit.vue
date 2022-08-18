@@ -90,7 +90,9 @@
             />
           </div>
 
-          <v-btn block flat type="submit" class="mt-5" color="primary">Update payment link</v-btn>
+          <v-btn block flat :disabled="state.submitted" type="submit" class="mt-5" color="primary"
+            >Update payment link</v-btn
+          >
         </v-form>
       </v-card-text>
     </v-card>
@@ -107,6 +109,7 @@ export default {
   emits: ["toggle-modal"],
   setup(props, ctx) {
     const state = reactive({
+      submitted: false,
       input: {
         ...props.paymentLink,
         amount:
@@ -116,11 +119,14 @@ export default {
 
     async function updatePaymentLink() {
       try {
+        state.submitted = true;
         const res = await paymentLinkService.updatePaymentLink(props.paymentLink.id, state.input);
         ctx.emit("toggle-modal");
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

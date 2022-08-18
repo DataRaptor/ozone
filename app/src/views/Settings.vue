@@ -53,7 +53,7 @@
               />
             </div>
 
-            <v-btn flat color="primary" @click="updateUser">Update</v-btn>
+            <v-btn flat :disabled="state.submitted" color="primary" @click="updateUser">Update</v-btn>
           </v-window-item>
 
           <v-window-item :value="1">
@@ -158,7 +158,7 @@
               </v-col>
             </v-row>
             <div class="mb-3">
-              <v-btn flat color="primary" @click="updateCompany">Update</v-btn>
+              <v-btn :disabled="state.submitted" flat color="primary" @click="updateCompany">Update</v-btn>
             </div>
           </v-window-item>
 
@@ -218,7 +218,7 @@
               </div>
             </template>
 
-            <v-btn flat color="primary" @click="updateUserPassword">Update</v-btn>
+            <v-btn flat :disabled="state.submitted" color="primary" @click="updateUserPassword">Update</v-btn>
           </v-window-item>
         </v-window>
       </v-col>
@@ -238,7 +238,13 @@ import { toast } from "../utils";
 export default {
   components: { Loader },
   setup() {
-    const state = reactive({ loading: false, tab: null, countries, input: { user: {}, company: {}, security: {} } });
+    const state = reactive({
+      submitted: false,
+      loading: false,
+      tab: null,
+      countries,
+      input: { user: {}, company: {}, security: {} },
+    });
     const { user } = storeToRefs(useAuthStore());
     const { company } = storeToRefs(useCompanyStore());
 
@@ -263,25 +269,34 @@ export default {
 
     async function updateCompany() {
       try {
+        state.submitted = true;
         await companyService.updateCompany(company.value.id, state.input.company);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 
     async function updateUser() {
       try {
+        state.submitted = true;
         await userService.updateUser(state.input.user);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 
     async function updateUserPassword() {
       try {
+        state.submitted = true;
         await userService.updateUserPassword(state.input.security);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

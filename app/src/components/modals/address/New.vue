@@ -34,7 +34,7 @@
             </v-col>
           </v-row>
 
-          <v-btn block flat type="submit" class="mt-5" color="primary">Add Address</v-btn>
+          <v-btn block flat :disabled="state.submitted" type="submit" class="mt-5" color="primary">Add Address</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -50,10 +50,12 @@ export default {
   props: ["show"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
-    const state = reactive({ input: {} });
+    const state = reactive({ submitted: false, input: {} });
 
     async function addAddress() {
       try {
+        state.submitted = true;
+
         const res = await addressService.addAddress(state.input);
         state.input = {};
 
@@ -61,6 +63,8 @@ export default {
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

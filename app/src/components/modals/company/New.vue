@@ -120,7 +120,7 @@
             </v-col>
           </v-row>
 
-          <v-btn block flat type="submit" class="mt-5" color="primary">Add Company</v-btn>
+          <v-btn block flat :disabled="state.submitted" type="submit" class="mt-5" color="primary">Add Company</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -137,15 +137,18 @@ export default {
   props: ["show"],
   emits: ["toggle-modal"],
   setup(_, ctx) {
-    const state = reactive({ input: {}, countries });
+    const state = reactive({ submitted: false, input: {}, countries });
 
     async function addCompany() {
       try {
+        state.submitted = true;
         const res = await companyService.addCompany(state.input);
         ctx.emit("toggle-modal");
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

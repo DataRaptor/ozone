@@ -34,7 +34,9 @@
             </v-col>
           </v-row>
 
-          <v-btn block flat type="submit" class="mt-5" color="primary">Update Address</v-btn>
+          <v-btn block flat :disabled="state.submitted" type="submit" class="mt-5" color="primary"
+            >Update Address</v-btn
+          >
         </v-form>
       </v-card-text>
     </v-card>
@@ -50,15 +52,19 @@ export default {
   props: ["address", "show"],
   emits: ["toggle-modal"],
   setup(props, ctx) {
-    const state = reactive({ input: {} });
+    const state = reactive({ submitted: false, input: {} });
 
     async function updateAddress() {
       try {
+        state.submitted = true;
+
         const res = await addressService.updateAddress(props.address.id, state.input);
         ctx.emit("toggle-modal");
         toast.success(res.message);
       } catch (e) {
         toast.error(e.message);
+      } finally {
+        state.submitted = false;
       }
     }
 

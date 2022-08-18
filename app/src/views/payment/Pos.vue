@@ -133,7 +133,7 @@
           </v-row>
 
           <div class="d-flex mt-10 mb-3">
-            <v-btn flat block color="primary" @click="makePayment">Continue</v-btn>
+            <v-btn flat block :disabled="state.submitted" color="primary" @click="makePayment">Continue</v-btn>
           </div>
         </v-col>
       </v-row>
@@ -162,6 +162,7 @@ export default {
   components: { PayModal, Loader },
   setup() {
     const state = reactive({
+      submitted: false,
       window: null,
       input: { amount: "0" },
       payment: {},
@@ -191,6 +192,8 @@ export default {
       }
     }
     async function makePayment() {
+      state.submitted = true;
+
       const address = state.input.address || {};
       const token = state.input.token || {};
       const initData = {
@@ -218,12 +221,13 @@ export default {
         async (signature) => {
           await paymentService.completePayment(payment.id, { transactionId: signature });
 
+          state.submitted = true;
           state.completed = true;
+          state.window = 0;
         }
       );
 
       toggleModal("pay");
-      state.window = 0;
     }
 
     function toggleModal(p) {

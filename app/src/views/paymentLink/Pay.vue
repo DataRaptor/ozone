@@ -34,7 +34,7 @@
                   {{ paymentLink.amount / Math.pow(10, paymentLink.token.decimals) }} {{ paymentLink.token.symbol }}
                 </h4>
               </div>
-              <v-btn flat block color="primary" @click="makePayment">Pay Now</v-btn>
+              <v-btn flat block :disabled="state.submitted" color="primary" @click="makePayment">Pay Now</v-btn>
             </div>
           </div>
         </v-card-text>
@@ -66,9 +66,11 @@ export default {
   setup() {
     const { paymentLink } = storeToRefs(usePaymentLinkStore());
     const route = useRoute();
-    const state = reactive({ modals: { pay: null }, payment: {}, token: {}, input: {} });
+    const state = reactive({ submitted: false, modals: { pay: null }, payment: {}, token: {}, input: {} });
 
     async function makePayment() {
+      state.submitted = true;
+
       const token = paymentLink.value.token;
       const address = paymentLink.value.address;
       const company = paymentLink.value.company;
@@ -109,6 +111,8 @@ export default {
           if (paymentLink.value.redirectUrl) {
             window.location.href = paymentLink.value.redirectUrl;
           }
+
+          state.submitted = false;
         }
       );
 
