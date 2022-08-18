@@ -106,7 +106,13 @@ export default {
   props: ["show", "paymentLink", "addresses", "tokens"],
   emits: ["toggle-modal"],
   setup(props, ctx) {
-    const state = reactive({ input: { ...props.paymentLink } });
+    const state = reactive({
+      input: {
+        ...props.paymentLink,
+        amount:
+          (props.paymentLink.amount || 0) / Math.pow(10, props.paymentLink.token && props.paymentLink.token.decimals),
+      },
+    });
 
     async function updatePaymentLink() {
       try {
@@ -120,7 +126,8 @@ export default {
 
     watch(
       () => props.paymentLink,
-      (n, o) => (state.input = { ...o, ...n })
+
+      (n, o) => (state.input = { ...o, ...n, amount: (n.amount || 0) / Math.pow(10, n.token && n.token.decimals) })
     );
 
     return { state, updatePaymentLink };
