@@ -1,5 +1,5 @@
 # Ozone Finance
 
-New Rust Backend Implementation -> https://github.com/ozonefinance/rusty_ozone
+New Backend Implementation -> https://github.com/ozonefinance/ozone-backend
 
-New Frontend Implementation -> https://github.com/ozonefinance/ozone_app
+New Frontend Implementation -> https://github.com/ozonefinance/ozone-app
